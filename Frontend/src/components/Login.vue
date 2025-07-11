@@ -86,7 +86,7 @@ const submitForm = () => {
 
   if (!errors.value.email && !errors.value.password) {
     alert('Signed in successfully!')
-    // Your actual sign-in logic here
+    
   }
 }
 </script>

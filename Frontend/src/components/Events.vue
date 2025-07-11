@@ -1,6 +1,6 @@
 <template class="bg-black">
     <div class="container mx-auto px-4 py-12 bg-black">
-        <!-- Header with animated glow - YOUR EXISTING CODE -->
+        <!-- Header with animated glow-->
         <header class="text-center mb-16 relative">
             <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400">
                 Event Themes Explorer
@@ -21,14 +21,12 @@
                 class="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden neon-border"
             >
                 <div class="relative h-48">
-                    <!-- YOUR EXISTING IMAGE -->
                     <img 
                         :src="theme.image" 
                         :alt="theme.description"
                         class="w-full h-full object-cover"
                     >
                     
-                    <!-- MY ADDITION: Animated Tag -->
                     <div 
                         class="absolute top-2 right-2 bg-teal-500/90 text-xs font-bold px-2 py-1 rounded-full text-white transition-all duration-500"
                         :class="{'-translate-x-0': loaded, 'translate-x-full': !loaded}"
@@ -48,7 +46,7 @@
                         </button>
                     </div>
 
-                    <!-- MY ADDITION: Title with Dark Overlay -->
+                    <!--Title with Dark Overlay -->
                     <div class="absolute bottom-0 left-0 right-0">
                         <div 
                         class="backdrop-blur-md bg-black/60 rounded-md inline-block px-3 py-1 transition-all duration-1000 transform"
@@ -61,7 +59,7 @@
                     </div>
                 </div>
                 
-                <!-- YOUR EXISTING CARD FOOTER (unchanged) -->
+                <!--CARD FOOTER-->
                 <div class="p-5 flex justify-between items-center">
                     <span class="text-teal-400 text-xs font-medium bg-teal-900/30 px-2 py-1 rounded-full">
                         {{ theme.eventsCount }} events
@@ -82,7 +80,7 @@
             </div>
         </div>
 
-        <!-- YOUR EXISTING EMPTY STATE -->
+        <!-- EMPTY STATE -->
         <div 
             v-if="filteredThemes.length === 0"
             class="text-center py-20"

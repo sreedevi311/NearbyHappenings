@@ -2,7 +2,7 @@
   <div class="flex flex-col min-h-screen bg-black text-gray-300">
     <!-- Header -->
     <header class="sticky top-0 z-10 bg-black shadow-md">
-      <div class="flex items-center w-full px-4 p-5 pt-6 gap-4 justify-between">
+      <div class="flex items-center w-full px-4 pt-6  gap-4 justify-between">
         <!-- Logo -->
         <img
           src="../nearbyHappeningsLogo.png"
@@ -23,7 +23,7 @@
           <!-- Tag pills -->
           <div
             v-if="searchQuery"
-            class="absolute top-full left-0 w-full flex flex-wrap gap-2 mt-2 z-50"
+            class="absolute top-full left-0 w-full flex gap-2 mt-2 z-50 overflow-x-auto whitespace-nowrap hide-scrollbar px-1"
           >
             <button
               v-for="type in filteredEventTypes"
@@ -59,56 +59,70 @@
       </div>
     </header>
 
-    <!-- Empty space for search results -->
-    <div class="h-8 w-full bg-transparent"></div>
-
     <div class="flex flex-1">
       <!-- Sidebar -->
-      <aside class="w-20 bg-gray-900 shadow-lg hidden md:block">
-        <nav class="p-2 flex flex-col items-center">
-          <ul class="space-y-4">
-            <li v-for="item in navItems" :key="item.name" class="flex flex-col items-center">
-              <router-link
-                :to="item.route"
-                class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-teal-700/30 transition-colors"
-                :class="{ 'bg-teal-700/30': activeNav === item.name }"
-                @click="activeNav = item.name"
-              >
-                <!-- Icon -->
-                <span
-                  class="material-icons text-teal-400 mb-1"
-                  style="font-size: 24px;"
-                >
-                  {{ item.icon }}
-                </span>
-                <!-- Label -->
-                <span class="text-xs text-gray-300">{{ item.name }}</span>
-              </router-link>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+  <aside class="fixed top-15 left-0 h-[calc(100vh-5rem)] w-30 bg-gray-900 text-white flex flex-col justify-between items-center py-8 z-20">
+    <nav class="p-2 flex flex-col items-center">
+      <ul class="space-y-10 w-full">
+        <li
+          v-for="item in navItems"
+          :key="item.name"
+          class="w-full rounded-xl transition-colors"
+          :class="{
+            'bg-teal-700/30': activeNav === item.name,
+            'hover:bg-teal-700/30': true
+          }"
+        >
+          <router-link
+            :to="item.route"
+            class="flex flex-col items-center justify-center p-4 w-full"
+            @click="activeNav = item.name"
+          >
+            <!-- Icon -->
+            <span class="material-icons text-teal-400 text-5xl mb-1">
+              {{ item.icon }}
+            </span>
+            <!-- Label -->
+            <span class="text-base text-gray-300 font-medium">
+              {{ item.name }}
+            </span>
+          </router-link>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+
 
       <!-- Main Content -->
-      <main class="flex-1 p-6 pt-0 overflow-x-hidden">
-        <section class="mb-10">
-          <h2 class="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300">Upcoming Events</h2>
-          <div class="flex gap-8 overflow-x-auto pb-4 pt-4 hide-scrollbar">
-            <EventCard class="min-w-[300px]" v-for="event in upcomingEvents" :key="event.id" :event="event" />
-          </div>
-        </section>
+      <main class="flex-1 p-10 pt-3 ml-32 overflow-x-hidden">
+
+      <!-- Empty space for search results -->
+      <div class="h-8 w-328 bg-transparent"></div>
+
+        <div>
+          <carousel :events="upcomingEvents"/>
+        </div>
 
         <section>
-          <h2 class="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300">You Might Like</h2>
+          <h2 class="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300">Featured Events</h2>
           <div class="flex gap-8 overflow-x-auto pb-4 pt-4 hide-scrollbar">
             <EventCard class="min-w-[300px]" v-for="event in interestedEvents" :key="event.id" :event="event" />
           </div>
         </section>
+
+        <section>
+          <h2 class="text-xl font-bold mb-4 mt-4 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300">Featured Events</h2>
+          <div class="flex gap-8 overflow-x-auto pb-4 pt-4 hide-scrollbar">
+            <EventCard class="min-w-[300px]" v-for="event in interestedEvents" :key="event.id" :event="event" />
+          </div>
+        </section>
+
       </main>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-10 px-6">
+    <footer class="bg-gray-900 text-gray-400 py-10 px-8 ml-32">
       <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
         <div>
           <h2 class="text-xl font-bold text-teal-400">Nearby Happenings</h2>
@@ -166,6 +180,7 @@
 <script setup>
 import { ref,computed } from 'vue'
 import EventCard from './EventCard.vue'
+import carousel from './carousel.vue'
 import Login from './Login.vue'
 import Signup from './SignUp.vue'
 
@@ -178,7 +193,7 @@ const navItems = ref([
   { name: 'Host', icon: 'description', route: '/host-event' },
 ])
 
-const userLoggedIn = ref(true) // toggle this for demo
+const  isSignedIn= ref(false) // toggle this for demo
 
 const searchQuery = ref('')
 const eventTypes = [

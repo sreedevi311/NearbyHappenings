@@ -107,7 +107,7 @@ const submitForm = () => {
   // If no errors, submit
   if (!errors.value.email && !errors.value.password && !errors.value.confirmPassword) {
     alert('Form submitted successfully!')
-    // You can handle actual signup logic here
+    
   }
 }
 </script>
