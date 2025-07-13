@@ -279,7 +279,8 @@
           </button>
           <button 
             type="submit" 
-            class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg text-white font-medium hover:from-green-600 hover:to-teal-700 transition-colors flex items-center"
+            :disabled="isSubmitting"
+            class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg text-white font-medium hover:from-green-600 hover:to-teal-700 transition-colors flex items-center disabled:opacity-50"
           >
             <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -349,8 +350,6 @@ const themes = ref([
 // Google Maps location search simulation
 const searchLocation = () => {
   if (form.value.locationQuery.length > 2) {
-    // In a real app, you would call Google Maps API here
-    // This is a simulation with sample results
     locationResults.value = [
       { description: `${form.value.locationQuery}, City Center`, place_id: '1' },
       { description: `${form.value.locationQuery} Community Park`, place_id: '2' },
@@ -375,7 +374,7 @@ const handleFileUpload = (event) => {
       alert('Please upload an image file (JPEG, PNG, GIF)');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) { // 5MB
+    if (file.size > 5 * 1024 * 1024) {
       alert('File size exceeds 5MB limit');
       return;
     }
@@ -411,11 +410,9 @@ const validateField = (field) => {
         errors.value.date = 'Date is required';
         isValid = false;
       } else {
-        // Check if date is in the future
         const selectedDate = new Date(form.value.date);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
         if (selectedDate < today) {
           errors.value.date = 'Date must be in the future';
           isValid = false;
@@ -445,7 +442,7 @@ const validateField = (field) => {
       
     case 'location':
       if (!form.value.location) {
-        errors.value.location = 'Please select a location';
+        errors.value.location = 'Please select a location from the dropdown';
         isValid = false;
       } else {
         errors.value.location = '';
@@ -483,8 +480,6 @@ const validateField = (field) => {
 // Form validation
 const validateForm = () => {
   let isValid = true;
-  
-  // Validate required fields
   isValid = validateField('eventName') && isValid;
   isValid = validateField('theme') && isValid;
   isValid = validateField('date') && isValid;
@@ -493,24 +488,7 @@ const validateForm = () => {
   isValid = validateField('location') && isValid;
   isValid = validateField('orgMobile') && isValid;
   isValid = validateField('orgEmail') && isValid;
-  
   return isValid;
-};
-
-// Form submission
-const submitForm = () => {
-  if (!validateForm()) return;
-  
-  isSubmitting.value = true;
-  
-  // In a real app, you would submit to your API here
-  // This is a simulation with a 1.5s delay
-  setTimeout(() => {
-    console.log('Form submitted:', form.value);
-    alert('Event submitted successfully!');
-    isSubmitting.value = false;
-    resetForm();
-  }, 1500);
 };
 
 // Form reset
@@ -533,20 +511,74 @@ const resetForm = () => {
     capacity: '',
     essentials: ''
   };
-  
-  // Clear all errors
   Object.keys(errors.value).forEach(key => {
     errors.value[key] = '';
   });
 };
+
+const emit = defineEmits(['add-event', 'switch-tab']);
+
+const submitForm = () => {
+  if (!validateForm()) {
+    alert('Please fill out all required fields correctly.');
+    isSubmitting.value = false;
+    return;
+  }
+
+  isSubmitting.value = true;
+
+  // Get current date and time in IST
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+  const istTime = new Date(now.getTime() + istOffset);
+  
+  // Format date as YYYY-MM-DD
+  const year = istTime.getUTCFullYear();
+  const month = String(istTime.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(istTime.getUTCDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
+  
+  // Format time as HH:MM AM/PM
+  let hours = istTime.getUTCHours();
+  const minutes = String(istTime.getUTCMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12; // Convert to 12-hour format
+  const formattedTime = `${hours}:${minutes} ${ampm}`;
+
+  // Prepare the event data to emit
+  const newEvent = {
+    name: form.value.eventName,
+    date: formattedDate, // Use current date
+    time: formattedTime, // Use current time
+    theme: form.value.theme,
+    city: form.value.city,
+    location: form.value.location,
+    orgName: form.value.orgName,
+    orgMobile: form.value.orgMobile,
+    orgEmail: form.value.orgEmail,
+    regLink: form.value.regLink,
+    regFee: form.value.regFee,
+    targetAudience: form.value.targetAudience,
+    capacity: form.value.capacity,
+    essentials: form.value.essentials,
+    poster: form.value.poster ? form.value.poster.name : null,
+  };
+
+  emit('add-event', newEvent);
+  emit('switch-tab', 'Added');
+
+  setTimeout(() => {
+    alert('Event submitted successfully!');
+    isSubmitting.value = false;
+    resetForm();
+  }, 1500);
+};
 </script>
 
 <style scoped>
-/* Neon border effect */
 .neon-border {
   position: relative;
 }
-
 .neon-border::after {
   content: '';
   position: absolute;
@@ -561,12 +593,10 @@ const resetForm = () => {
   opacity: 0.3;
   transition: opacity 0.3s ease;
 }
-
 .neon-border:hover::after {
   opacity: 0.6;
   animation: gradientAnimation 2s ease infinite;
 }
-
 @keyframes gradientAnimation {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }

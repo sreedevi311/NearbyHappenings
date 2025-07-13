@@ -189,7 +189,7 @@ const activeNav = ref('Home')
 const navItems = ref([
   { name: 'Home', icon: 'home', route: '/' },
   { name: 'Events', icon: 'celebration', route: '/events' },
-  { name: 'Community', icon: 'groups', route: '/community' },
+  { name: 'Community', icon: 'groups', route: '/admin-panel' },
   { name: 'Host', icon: 'description', route: '/host-event' },
 ])
 

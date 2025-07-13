@@ -38,12 +38,16 @@
                         v-if="hoveredTheme === theme.id"
                         class="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-300"
                     >
-                        <button class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-full font-medium flex items-center gap-1 transition-all">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            Explore
-                        </button>
+                    <button 
+                    @click="$router.push({ path: `/events/${theme.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-')}` })"
+                    class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-full font-medium flex items-center gap-1 transition-all"
+                    >
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Explore
+                    </button>
+
                     </div>
 
                     <!--Title with Dark Overlay -->
