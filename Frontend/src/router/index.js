@@ -3,6 +3,7 @@ import Home from '../components/Home.vue'
 import Events from '../components/Events.vue'
 import HostEvent from '../components/HostEvent.vue'
 import ThemeEvents from '../components/ThemeEvents.vue'
+import EventDetails from '../components/EventDetails.vue'
 import AdminPanel from '../components/AdminPanel.vue'
 import Requests from '../components/Requests.vue'
 import AddEvent from '../components/AddEvent.vue'
@@ -32,7 +33,12 @@ const router = createRouter({
       component: ThemeEvents,
       props: true
     },
-
+    {
+      path: '/events/:theme/:id', // ✅ Corrected path
+      name: 'event-details',
+      component: EventDetails,
+      props: true,
+    },
     // Admin Panel with nested children
     {
       path: '/admin-panel',
