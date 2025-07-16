@@ -9,18 +9,14 @@
         <div
           v-for="event in filteredEvents"
           :key="event.id"
-          class="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden neon-border"
+          class="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden neon-border cursor-pointer"
+          @click="goToEvent(event)"
         >
           <div class="relative h-48">
             <img :src="event.image" :alt="event.name" class="w-full h-full object-cover" />
-            <div class="absolute bottom-0 left-0 right-0">
-              <div
-                class="absolute bottom-0 left-0 w-full bg-black/60 text-white text-lg font-bold px-3 py-2"
-              >
-                <h3 class="text-white text-lg font-bold">
-                  {{ event.name }}
-                </h3>
-              </div>
+            
+            <div class="absolute bottom-0 left-0 w-full bg-black/60 text-white text-lg font-bold px-3 py-2">
+              <h3>{{ event.name }}</h3>
             </div>
           </div>
           <div class="p-4 space-y-1">
@@ -43,15 +39,7 @@
       </div>
 
       <div v-else class="text-center py-20">
-        <div class="max-w-md mx-auto">
-          <div class="w-24 h-24 mx-auto mb-6 text-teal-400 pulse-animation">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h2 class="text-2xl font-bold mb-2">No events found</h2>
-          <p class="text-gray-400">Check back later for updates</p>
-        </div>
+        <h2 class="text-2xl font-bold">No events found</h2>
       </div>
     </div>
   </div>
@@ -59,20 +47,32 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
-
+const router = useRouter()
 const allEvents = [
   {
     id: 1,
     theme: "yoga-wellness",
     name: "Morning Beach Yoga",
     image: "https://images.unsplash.com/photo-1508780709619-79562169bc64",
+    alt: "People practicing yoga at sunrise on the beach",
     date: "July 20, 2025",
     time: "6:00 AM",
     distance: "2 km away",
-    location: "RK Beach, Vizag"
+    location: "RK Beach",
+    city: "Vizag",
+    description: "Start your day with a rejuvenating yoga session on the beach with calming waves and fresh air.",
+    price: "Free",
+    organizer: "Vizag Yoga Community",
+    capacity: 50,
+    availableSpots: 15,
+    registrationLink: "https://example.com/register/beach-yoga",
+    contactEmail: "info@vizagyoga.com",
+    featured: true,
+    ageGroup: "All ages",
+    tags: ["Yoga"]
   },
   {
     id: 2,
@@ -106,6 +106,28 @@ const allEvents = [
     theme: 'health',
     image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
     alt: 'Group of people doing yoga outdoors at sunrise with city skyline in background'
+  },
+  {
+    id: 5,
+    name: 'Local Art Festival',
+    date: 'Oct 18, 2023',
+    time: '10:00 AM',
+    distance: '1.2 miles',
+    location: 'Downtown Square',
+    theme: 'art-culture',
+    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80',
+    alt: 'Colorful outdoor art festival with tents displaying paintings and sculptures'
+  },
+  {
+    id: 6,
+    name: 'Local Art Festival',
+    date: 'Oct 18, 2023',
+    time: '10:00 AM',
+    distance: '1.2 miles',
+    location: 'Downtown Square',
+    theme: 'art',
+    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80',
+    alt: 'Colorful outdoor art festival with tents displaying paintings and sculptures'
   },
   {
     id: 7,
@@ -192,7 +214,7 @@ const allEvents = [
   distance: '3 km',
   location: 'Downtown Gym',
   theme: 'martial-arts-fitness',
-  image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
+  image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
   alt: 'Kickboxing class with energetic group training'
 },
 {
@@ -203,7 +225,7 @@ const allEvents = [
   distance: '5 km',
   location: 'City Sports Center',
   theme: 'martial-arts-fitness',
-  image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
+  image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
   alt: 'Judo athletes practicing throws on mats'
 },
 {
@@ -214,7 +236,7 @@ const allEvents = [
   distance: '2.5 km',
   location: 'Zen Martial Studio',
   theme: 'martial-arts-fitness',
-  image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
+  image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
   alt: 'Karate master demonstrating kata movements'
 },
 {
@@ -225,7 +247,7 @@ const allEvents = [
   distance: '4 km',
   location: 'Open Air Park',
   theme: 'martial-arts-fitness',
-  image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
+  image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
   alt: 'Outdoor bootcamp group training session'
 },
 {
@@ -236,7 +258,7 @@ const allEvents = [
   distance: '1 km',
   location: 'Beach Promenade',
   theme: 'martial-arts-fitness',
-  image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
+  image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
   alt: 'Group of runners jogging along the beach at sunrise'
 },
 {
@@ -247,7 +269,7 @@ const allEvents = [
   distance: '3.5 km',
   location: 'City Fitness Hub',
   theme: 'martial-arts-fitness',
-  image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
+  image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
   alt: 'Athletes performing strength drills in a gym environment'
 },
 {
@@ -258,7 +280,7 @@ const allEvents = [
   distance: '2 km',
   location: 'Urban Fitness Park',
   theme: 'martial-arts-fitness',
-  image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
+  image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
   alt: 'Fitness enthusiasts training outdoors on bars'
 },
 {
@@ -269,7 +291,7 @@ const allEvents = [
   distance: '6 km',
   location: 'Arena Dome',
   theme: 'martial-arts-fitness',
-  image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
+  image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
   alt: 'MMA fighters preparing backstage for an event'
 },
 {
@@ -280,7 +302,7 @@ const allEvents = [
   distance: '4.2 km',
   location: 'Balance Studio',
   theme: 'martial-arts-fitness',
-  image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
+  image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=640&q=80',
   alt: 'Athlete practicing deep stretching in a bright studio'
 },
 {
@@ -815,22 +837,29 @@ const allEvents = [
 },
 ]
 
-const formattedThemeName = computed(() => {
-  return route.params.theme.replace(/-/g, ' ')
-})
+
+const formattedThemeName = computed(() => route.params.theme.replace(/-/g, ' '))
 
 const filteredEvents = computed(() => {
   return allEvents.filter(event => event.theme === route.params.theme)
 })
+
+const goToEvent = (event) => {
+  router.push({ 
+    name: 'event-details', 
+    params: { theme: event.theme, id: event.id },
+    state: { event } // pass full event object using history state
+  })
+}
 </script>
 
 <style scoped>
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
-}
-.pulse-animation {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 .neon-border {
   position: relative;

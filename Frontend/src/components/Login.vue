@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-300 to-teal-400">
+  <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-300 to-teal-400 px-3">
     <div class="bg-black p-8 rounded-2xl shadow-lg w-full max-w-md">
       <h2 class="text-3xl font-bold mb-2 text-center text-white">Welcome Back</h2>
       <p class="mb-6 text-center text-gray-400">Sign in to your Nearby Happenings account</p>

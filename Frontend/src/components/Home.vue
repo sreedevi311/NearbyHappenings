@@ -1,13 +1,13 @@
 <template>
   <div class="flex flex-col min-h-screen bg-black text-gray-300">
     <!-- Header -->
-    <header class="sticky top-0 z-10 bg-black shadow-md">
-      <div class="flex items-center w-full px-4 pt-6  gap-4 justify-between">
+      <header class="sticky top-0 z-10 bg-black shadow-md border border-gray-800 text-green-300 px-4 pb-3 flex items-center justify-between gap-4  transition-all">
+      <div class="flex items-center w-full px-4 pt-6 pb-3  gap-4 justify-between">
         <!-- Logo -->
         <img
           src="../nearbyHappeningsLogo.png"
           alt="Nearby Happenings Logo"
-          class="h-12 object-contain"
+          class="h-10 object-contain"
         />
 
         <!-- Search Bar -->
@@ -23,7 +23,7 @@
           <!-- Tag pills -->
           <div
             v-if="searchQuery"
-            class="absolute top-full left-0 w-full flex gap-2 mt-2 z-50 overflow-x-auto whitespace-nowrap hide-scrollbar px-1"
+            class="absolute top-full left-0 w-full flex gap-2 mt-5 z-50 overflow-x-auto whitespace-nowrap hide-scrollbar px-1"
           >
             <button
               v-for="type in filteredEventTypes"
@@ -61,13 +61,13 @@
 
     <div class="flex flex-1">
       <!-- Sidebar -->
-  <aside class="fixed top-15 left-0 h-[calc(100vh-5rem)] w-30 bg-gray-900 text-white flex flex-col justify-between items-center py-8 z-20">
+  <aside class="fixed top-15 left-0 h-[calc(100vh-5rem)] w-28 bg-gray-900 text-white flex flex-col justify-between items-center py-8 z-20 ">
     <nav class="p-2 flex flex-col items-center">
       <ul class="space-y-10 w-full">
         <li
           v-for="item in navItems"
           :key="item.name"
-          class="w-full rounded-xl transition-colors"
+          class="w-24 rounded-xl transition-colors"
           :class="{
             'bg-teal-700/30': activeNav === item.name,
             'hover:bg-teal-700/30': true
@@ -95,7 +95,7 @@
 
 
       <!-- Main Content -->
-      <main class="flex-1 p-10 pt-3 ml-32 overflow-x-hidden">
+      <main class="flex-1 p-10 pt-3 ml-28 overflow-x-hidden">
 
       <!-- Empty space for search results -->
       <div class="h-8 w-328 bg-transparent"></div>
@@ -122,7 +122,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-10 px-8 ml-32">
+    <footer class="bg-gray-900 text-gray-400 py-10 px-8 ml-28">
       <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
         <div>
           <h2 class="text-xl font-bold text-teal-400">Nearby Happenings</h2>
