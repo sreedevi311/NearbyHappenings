@@ -2,10 +2,62 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  email:    { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role:     { type: String, enum: ['user', 'admin'], default: 'user' },
-  refreshToken: { type: String } // to track refresh tokens per user
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+  },
+
+  password: {
+    type: String,
+    required: true,
+  },
+
+  role: { 
+  type: String, 
+  enum: ['user', 'admin'], 
+  default: 'user' 
+  },
+
+  city: {
+    type: String,
+    default: '',
+  },
+
+  interests: {
+    type: [String], // e.g., ["Yoga", "Music", "Gardening"]
+    default: [],
+  },
+
+  isOrganizer: {
+    type: Boolean,
+    default: false,
+  },
+
+  hostedEvents: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Event',
+    }
+  ],
+
+  interestedEvents: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Event',
+    }
+  ],
+
+  refreshToken: {
+    type: String,
+    default: '',
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
 });
 
 // Hash password before saving

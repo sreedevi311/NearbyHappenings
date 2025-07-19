@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth.routes');
+const eventRoutes=require('./routes/eventRoutes')
 const authenticate = require("./middleware/auth.middleware");
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/nearby-happenings/auth', authRoutes);
+app.use('/nearby-happenings/events',eventRoutes);
 
 app.get('/', (req, res) => {
   res.send('Nearby Happenings API');
