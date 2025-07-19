@@ -53,7 +53,7 @@
             Sign In
           </button>
           <div v-else class="flex items-center gap-2 cursor-pointer">
-            <img src="../user-profile.png" alt="Profile" class="h-10 w-10 rounded-full object-cover border border-teal-500" />
+            <span class="material-icons text-teal-400 text-5xl mb-1">account_circle</span>
           </div>
         </div>
       </div>

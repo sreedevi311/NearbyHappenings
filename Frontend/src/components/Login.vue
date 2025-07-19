@@ -54,9 +54,15 @@
 
 <script setup>
 import { ref } from 'vue'
+import { api } from '@/services/api' // Adjust path as needed
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'  // adjust path if needed
 
 const email = ref('')
 const password = ref('')
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const errors = ref({
   email: '',
@@ -68,7 +74,7 @@ const validateEmail = (email) => {
   return re.test(email)
 }
 
-const submitForm = () => {
+const submitForm = async () => {
   errors.value = {
     email: '',
     password: '',
@@ -85,8 +91,21 @@ const submitForm = () => {
   }
 
   if (!errors.value.email && !errors.value.password) {
-    alert('Signed in successfully!')
-    
+    try {
+      console.log("🛂 Submitting login:", email.value)
+
+      // ✅ Call the authStore's login action
+      await authStore.login(email.value, password.value)
+
+      console.log("✅ Login success. Tokens saved in store")
+
+      // ✅ Redirect after successful login
+      router.push('/')
+
+    } catch (error) {
+      console.error("❌ Login failed:", error.response?.data || error.message)
+    }
   }
 }
+
 </script>
