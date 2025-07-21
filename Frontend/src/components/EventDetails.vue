@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-[#0b0f1a] text-white px-4 py-8 md:px-16 font-sans">
-    <h1 class="text-3xl md:text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300 capitalize animate-slide-down">
-      {{ event.name }}
+  <div v-if="event" class="min-h-screen bg-[#0b0f1a] text-white px-4 py-8 md:px-16 font-sans">
+    <h1 class="text-3xl md:text-4xl font-bold mb-6 pb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300 capitalize animate-slide-down">
+      {{ event.eventName }}
     </h1>
 
     <div class="flex flex-col md:flex-row gap-6 animate-fade-in">
       <div class="flex-1 flex flex-col">
         <div class="relative group neon-border rounded-xl overflow-hidden mb-4">
           <img
-            :src="event.image"
+            :src="event.posterUrl"
             :alt="event.alt"
             class="rounded-xl w-full h-[450px] object-cover hover:scale-105 transition-transform duration-500"
             @load="loaded = true"
@@ -17,13 +17,7 @@
             class="absolute bottom-2 left-2 flex flex-row gap-2 transition-all duration-500"
             :class="{'translate-x-0': loaded, '-translate-x-full': !loaded}"
           >
-            <div
-              v-for="tag in event.tags"
-              :key="tag"
-              class="bg-teal-500/90 text-xl font-bold px-2 py-1 rounded-xl text-white"
-            >
-              {{ tag }}
-            </div>
+            <div class="bg-teal-500/90 text-xl font-bold px-2 py-1 rounded-xl text-white">{{ event.tag }}</div>
           </div>
         </div>
 
@@ -47,43 +41,52 @@
 
         <div class="mt-6">
           <h2 class="text-2xl font-semibold mb-2 gradient-text inline-block">Organizer Details</h2>
-          <p><strong class="gradient-text">Name:</strong> {{ event.organizer || 'N/A' }}</p>
-          <p><strong class="gradient-text">Contact:</strong> {{ event.contactEmail || 'N/A' }}</p>
+          <p>
+            <span class="block gradient-text font-semibold mb-2">Contact:</span>
+            <span class="block text-md text-gray-300">
+              <span class="material-icons text-teal-400 text-sm mr-1 align-middle">call</span>
+              {{ event.organizer.mobile || 'N/A' }}
+            </span>
+            <span class="block text-md text-gray-300">
+              <span class="material-icons text-teal-400 text-sm mr-1 align-middle">email</span>
+              {{ event.organizer.email || 'N/A' }}
+            </span>
+          </p>
         </div>
       </div>
 
       <div class="w-full md:w-[420px] h-[450px] bg-[#1b2236] neon-border rounded-xl p-6 shadow-lg space-y-4">
         <div class="flex items-center gap-2">
-          <span class="material-icons text-teal-400 text-base mr-1">calendar_today</span>
+          <span class="material-icons text-teal-400 text-base mr-1 align-middle">calendar_today</span>
           <span class="gradient-text">{{ event.date }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="material-icons text-teal-400 text-base mr-1">schedule</span>
+          <span class="material-icons text-teal-400 text-base mr-1 align-middle">schedule</span>
           <span class="gradient-text">{{ event.time }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="material-icons text-teal-400 text-base mr-1">location_city</span>
+          <span class="material-icons text-teal-400 text-base mr-1 align-middle">location_city</span>
           <span class="gradient-text">{{ event.city || 'City not specified' }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="material-icons text-teal-400 text-base mr-1">location_on</span>
-          <span class="gradient-text">{{ event.location }}</span>
+          <span class="material-icons text-teal-400 text-base mr-1 align-middle">location_on</span>
+          <span class="gradient-text">{{ event.location.address }}</span>
         </div>
         <div>
-          <span class="material-icons text-teal-400 text-base mr-1">groups</span>
-          <strong class="gradient-text">Target Audience:</strong> {{ event.ageGroup || 'All' }}
+          <span class="material-icons text-teal-400 text-base mr-1 align-middle">groups</span>
+          <strong class="gradient-text">Target Audience:</strong> {{ event.targetAudience || 'All' }}
         </div>
         <div>
-          <span class="material-icons text-teal-400 text-base mr-1">event_seat</span>
-          <strong class="gradient-text">Capacity:</strong> {{ event.capacity || 'Not specified' }}
+          <span class="material-icons text-teal-400 text-base mr-1 align-middle">event_seat</span>
+          <strong class="gradient-text">Capacity:</strong> {{ event.capacity || 'No Limit' }}
         </div>
         <div>
           <span class="material-icons text-teal-400 text-base mr-1">backpack</span>
-          <strong class="gradient-text">Essentials:</strong> {{ event.essentials || 'None' }}
+          <strong class="gradient-text">Essentials:</strong> {{ event.essentialsToCarry || 'None' }}
         </div>
         <div v-if="event.price">
-          <span class="material-icons text-teal-400 text-base mr-1">request_quote</span>
-          <strong class="gradient-text">Fee:</strong> {{ event.price }}
+          <span class="material-icons text-teal-400 text-base mr-1 align-middle">request_quote</span>
+          <strong class="gradient-text">Fee:</strong> {{ event.registrationFee }}
         </div>
 
         <div v-if="event.registrationLink" class="flex justify-center">
@@ -98,15 +101,20 @@
       </div>
     </div>
   </div>
+  <div v-else class="text-center text-white mt-10 animate-pulse">
+  Fetching event info...
+</div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref,onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import {api} from '../services/api'
+console.log('EventDetails component loaded')
 
 const route = useRoute()
-
-// Get passed event data from history state
-const event = history.state.event
+const eventId = route.params.id
+console.log(eventId)
+const event = ref(null)
 
 const interestedCount = ref(0)
 const userInterested = ref(false)
@@ -121,6 +129,16 @@ const handleInterested = () => {
     userInterested.value = false
   }
 }
+onMounted(async () => {
+  try {
+    const res = await api.get(`/events/${eventId}`)
+    console.log('Event fetched:', res.data)
+    event.value = res.data
+  } catch (err) {
+    console.error('Failed to fetch event:', err)
+  }
+})
+
 </script>
 
 <style scoped>

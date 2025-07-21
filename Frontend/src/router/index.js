@@ -34,14 +34,14 @@ const router = createRouter({
       props: true
     },
     {
-      path: '/events/:theme/:id', // ✅ Corrected path
+      path: '/event/:id', // ✅ Corrected path
       name: 'event-details',
       component: EventDetails,
-      props: true,
     },
     // Admin Panel with nested children
     {
       path: '/admin-panel',
+      name:'admin-panel',
       component: AdminPanel,
       children: [
         {
@@ -57,7 +57,14 @@ const router = createRouter({
           path: '/add-event',
           name: 'admin-add-event',
           component: AddEvent
+        },
+        {
+          path: '/admin/edit-event/:id',
+          name: 'admin-edit-event',
+          component: HostEvent,
+          props: route => ({ isEdit: true, eventId: route.params.id })
         }
+
       ]
     }
   ]

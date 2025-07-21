@@ -2,6 +2,7 @@
   <div
     @mouseenter="hovered = true"
     @mouseleave="hovered = false"
+    @click="navigateToEdit"
     :class="{
       'theme-hover transform transition-all duration-300': true,
       'border-teal-500': hovered
@@ -11,12 +12,12 @@
     <!-- Top bar: Title + Buttons -->
     <div class="flex justify-between items-center bg-black/60 rounded-md px-3 py-3 mb-3">
       <h3 class="text-white text-md font-bold">
-        {{ request.name }}
+        {{ request.eventName }}
       </h3>
       <div class="flex gap-3">
         <button
           v-if="type !== 'accepted'"
-          @click="$emit('accept', request)"
+          @click="$emit('accept', request,'accepted')"
           class="border border-teal-500 text-teal-400 rounded-full px-4 py-1.5 text-sm font-medium transition-all
                   hover:bg-teal-600/20 hover:border-teal-500 hover:text-teal-400"
         >
@@ -24,7 +25,7 @@
         </button>
         <button
           v-if="type !== 'declined'"
-          @click="$emit('decline', request)"
+          @click="$emit('decline', request,'declined')"
           class="border border-red-500 text-red-400 rounded-full px-4 py-1.5 text-sm font-medium transition-all
                 hover:bg-red-600/20 hover:border-red-500 hover:text-red-400"
         >
@@ -42,11 +43,11 @@
     <div class="text-sm text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400 flex items-center gap-4 m-4">
       <div class="flex items-center gap-1">
         <span class="material-icons">event</span>
-        <span>{{ request.date }}</span>
+        <span>{{ formatDate(request.createdAt) }}</span>
       </div>
       <div class="flex items-center gap-1">
         <span class="material-icons">schedule</span>
-        <span>{{ request.time }}</span>
+        <span>{{ formatTime(request.createdAt) }}</span>
       </div>
     </div>
   </div>
@@ -55,16 +56,32 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 const props = defineProps({
   request: Object,
   type: String
 })
 
+const router = useRouter()
+function navigateToEdit() {
+  router.push(`/admin/edit-event/${props.request._id}`)
+}
 const statusLabel = computed(() => {
   if (props.type === 'accepted') return 'Accepted on'
   if (props.type === 'declined') return 'Declined on'
   return 'Requested on'
 })
+
+const formatDate = (isoString) => {
+  const date = new Date(isoString)
+  return date.toLocaleDateString() // e.g., "7/17/2025"
+}
+
+const formatTime = (isoString) => {
+  const date = new Date(isoString)
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) // e.g., "04:45 PM"
+}
+
 </script>
 
 <style scoped>

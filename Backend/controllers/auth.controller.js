@@ -88,4 +88,23 @@ const refreshToken = async (req, res) => {
   }
 };
 
-module.exports = { login, signup ,refreshToken, logout};
+ const updateUserPreferences=async (req, res) => {
+  const { city, interests } = req.body
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId,
+      {
+        $set: {
+          city,
+          interests,
+        }
+      },
+      { new: true }
+    )
+    res.json({ success: true, user: updatedUser })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update preferences' })
+  }
+}
+
+module.exports = { login, signup ,refreshToken, logout,updateUserPreferences};

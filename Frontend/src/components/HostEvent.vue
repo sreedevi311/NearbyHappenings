@@ -295,9 +295,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { api } from '../services/api';
+import { useRoute } from 'vue-router';
 
-// Form data
+const route = useRoute();
+const isAdmin = route.name === 'admin-add-event';
+
+const props = defineProps({
+  isEdit: Boolean,
+  eventId: String
+});
+
+const emit = defineEmits(['add-event', 'switch-tab', 'updated']);
+
 const form = ref({
   eventName: '',
   theme: '',
@@ -307,33 +318,25 @@ const form = ref({
   location: null,
   locationQuery: '',
   poster: null,
+  tag: '',
+  description: '',
   orgName: '',
-  orgMobile: '',
   orgEmail: '',
+  orgMobile: '',
   regLink: '',
   regFee: '',
   targetAudience: '',
   capacity: '',
-  essentials: ''
+  essentials: '',
+  createdBy: isAdmin ? 'admin' : 'host',
+  status: isAdmin ? 'accepted' : 'pending',
+  updatedByAdmin: false
 });
 
-// Validation errors
-const errors = ref({
-  eventName: '',
-  theme: '',
-  date: '',
-  time: '',
-  city: '',
-  location: '',
-  orgMobile: '',
-  orgEmail: ''
-});
-
-// UI state
+const errors = ref({});
 const isSubmitting = ref(false);
 const locationResults = ref([]);
 
-// Available themes
 const themes = ref([
   'Yoga & Wellness',
   'Art & Culture',
@@ -347,7 +350,6 @@ const themes = ref([
   'Community Service & Awareness'
 ]);
 
-// Google Maps location search simulation
 const searchLocation = () => {
   if (form.value.locationQuery.length > 2) {
     locationResults.value = [
@@ -360,138 +362,40 @@ const searchLocation = () => {
   }
 };
 
-const selectLocation = (location) => {
-  form.value.location = location;
-  form.value.locationQuery = location.description;
+const selectLocation = (loc) => {
+  form.value.location = loc;
+  form.value.locationQuery = loc.description;
   locationResults.value = [];
 };
 
-// File upload handler
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
     if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-      alert('Please upload an image file (JPEG, PNG, GIF)');
+      alert('Please upload a valid image (JPEG, PNG, GIF)');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size exceeds 5MB limit');
+      alert('File exceeds 5MB limit');
       return;
     }
     form.value.poster = file;
   }
 };
 
-// Field validation
-const validateField = (field) => {
-  let isValid = true;
-  
-  switch (field) {
-    case 'eventName':
-      if (!form.value.eventName.trim()) {
-        errors.value.eventName = 'Event name is required';
-        isValid = false;
-      } else {
-        errors.value.eventName = '';
-      }
-      break;
-      
-    case 'theme':
-      if (!form.value.theme) {
-        errors.value.theme = 'Please select a theme';
-        isValid = false;
-      } else {
-        errors.value.theme = '';
-      }
-      break;
-      
-    case 'date':
-      if (!form.value.date) {
-        errors.value.date = 'Date is required';
-        isValid = false;
-      } else {
-        const selectedDate = new Date(form.value.date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        if (selectedDate < today) {
-          errors.value.date = 'Date must be in the future';
-          isValid = false;
-        } else {
-          errors.value.date = '';
-        }
-      }
-      break;
-      
-    case 'time':
-      if (!form.value.time) {
-        errors.value.time = 'Time is required';
-        isValid = false;
-      } else {
-        errors.value.time = '';
-      }
-      break;
-      
-    case 'city':
-      if (!form.value.city.trim()) {
-        errors.value.city = 'City is required';
-        isValid = false;
-      } else {
-        errors.value.city = '';
-      }
-      break;
-      
-    case 'location':
-      if (!form.value.location) {
-        errors.value.location = 'Please select a location from the dropdown';
-        isValid = false;
-      } else {
-        errors.value.location = '';
-      }
-      break;
-      
-    case 'orgMobile':
-      if (!form.value.orgMobile.trim()) {
-        errors.value.orgMobile = 'Contact number is required';
-        isValid = false;
-      } else if (!/^\+?[\d\s-]{10,}$/.test(form.value.orgMobile)) {
-        errors.value.orgMobile = 'Please enter a valid phone number';
-        isValid = false;
-      } else {
-        errors.value.orgMobile = '';
-      }
-      break;
-      
-    case 'orgEmail':
-      if (!form.value.orgEmail.trim()) {
-        errors.value.orgEmail = 'Contact email is required';
-        isValid = false;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.orgEmail)) {
-        errors.value.orgEmail = 'Please enter a valid email address';
-        isValid = false;
-      } else {
-        errors.value.orgEmail = '';
-      }
-      break;
-  }
-  
-  return isValid;
-};
-
-// Form validation
 const validateForm = () => {
-  let isValid = true;
-  isValid = validateField('eventName') && isValid;
-  isValid = validateField('theme') && isValid;
-  isValid = validateField('date') && isValid;
-  isValid = validateField('time') && isValid;
-  isValid = validateField('city') && isValid;
-  isValid = validateField('location') && isValid;
-  isValid = validateField('orgMobile') && isValid;
-  isValid = validateField('orgEmail') && isValid;
-  return isValid;
+  let valid = true;
+  const requiredFields = ['eventName', 'theme', 'date', 'time', 'city', 'location', 'orgEmail', 'orgMobile'];
+  errors.value = {};
+  requiredFields.forEach(field => {
+    if (!form.value[field] || (typeof form.value[field] === 'string' && !form.value[field].trim())) {
+      errors.value[field] = 'This field is required';
+      valid = false;
+    }
+  });
+  return valid;
 };
 
-// Form reset
 const resetForm = () => {
   form.value = {
     eventName: '',
@@ -502,78 +406,109 @@ const resetForm = () => {
     location: null,
     locationQuery: '',
     poster: null,
+    tag: '',
+    description: '',
     orgName: '',
-    orgMobile: '',
     orgEmail: '',
+    orgMobile: '',
     regLink: '',
     regFee: '',
     targetAudience: '',
     capacity: '',
-    essentials: ''
+    essentials: '',
+    createdBy: isAdmin ? 'admin' : 'host',
+    status: isAdmin ? 'accepted' : 'pending',
+    updatedByAdmin: false
   };
-  Object.keys(errors.value).forEach(key => {
-    errors.value[key] = '';
-  });
 };
 
-const emit = defineEmits(['add-event', 'switch-tab']);
-
-const submitForm = () => {
+const submitForm = async () => {
   if (!validateForm()) {
-    alert('Please fill out all required fields correctly.');
-    isSubmitting.value = false;
+    alert('Please correct the highlighted errors');
     return;
   }
 
-  isSubmitting.value = true;
-
-  // Get current date and time in IST
-  const now = new Date();
-  const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
-  const istTime = new Date(now.getTime() + istOffset);
-  
-  // Format date as YYYY-MM-DD
-  const year = istTime.getUTCFullYear();
-  const month = String(istTime.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(istTime.getUTCDate()).padStart(2, '0');
-  const formattedDate = `${year}-${month}-${day}`;
-  
-  // Format time as HH:MM AM/PM
-  let hours = istTime.getUTCHours();
-  const minutes = String(istTime.getUTCMinutes()).padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12 || 12; // Convert to 12-hour format
-  const formattedTime = `${hours}:${minutes} ${ampm}`;
-
-  // Prepare the event data to emit
-  const newEvent = {
-    name: form.value.eventName,
-    date: formattedDate, // Use current date
-    time: formattedTime, // Use current time
+  const payload = {
+    eventName: form.value.eventName,
     theme: form.value.theme,
+    date: form.value.date,
+    time: form.value.time,
     city: form.value.city,
     location: form.value.location,
-    orgName: form.value.orgName,
-    orgMobile: form.value.orgMobile,
-    orgEmail: form.value.orgEmail,
-    regLink: form.value.regLink,
-    regFee: form.value.regFee,
-    targetAudience: form.value.targetAudience,
-    capacity: form.value.capacity,
-    essentials: form.value.essentials,
-    poster: form.value.poster ? form.value.poster.name : null,
+    posterUrl: form.value.poster?.name || form.value.poster || null,
+    tag: form.value.tag,
+    description: form.value.description,
+    organizer: {
+      name: form.value.orgName,
+      email: form.value.orgEmail,
+      mobile: form.value.orgMobile
+    },
+    others: {
+      registrationLink: form.value.regLink,
+      registrationFee: form.value.regFee,
+      targetAudience: form.value.targetAudience,
+      capacity: form.value.capacity,
+      essentialsToCarry: form.value.essentials
+    },
+    createdBy: form.value.createdBy,
+    status: form.value.status,
+    updatedByAdmin: props.isEdit || isAdmin
   };
 
-  emit('add-event', newEvent);
-  emit('switch-tab', 'Added');
-
-  setTimeout(() => {
+  isSubmitting.value = true;
+  try {
+    if (props.isEdit) {
+      await api.put(`/events/admin-updated-event-info/${props.eventId}`, payload);
+      emit('updated');
+    } else {
+      await api.post('/events/save-form-event', payload);
+      emit('add-event', payload);
+      emit('switch-tab', 'Added');
+    }
     alert('Event submitted successfully!');
-    isSubmitting.value = false;
     resetForm();
-  }, 1500);
+  } catch (err) {
+    console.error('Submission failed:', err);
+    alert('Failed to submit event');
+  } finally {
+    isSubmitting.value = false;
+  }
 };
+
+onMounted(async () => {
+  if (props.isEdit && props.eventId) {
+    try {
+      const { data } = await api.get(`/events/${props.eventId}`);
+      form.value = {
+        eventName: data.eventName,
+        theme: data.theme,
+        date: data.date?.slice(0, 10),
+        time: data.time,
+        city: data.city,
+        location: data.location,
+        locationQuery: '',
+        poster: data.posterUrl || null,
+        tag: data.tag || '',
+        description: data.description || '',
+        orgName: data.organizer?.name || '',
+        orgEmail: data.organizer?.email || '',
+        orgMobile: data.organizer?.mobile || '',
+        regLink: data.others?.registrationLink || '',
+        regFee: data.others?.registrationFee || '',
+        targetAudience: data.others?.targetAudience || '',
+        capacity: data.others?.capacity || '',
+        essentials: data.others?.essentialsToCarry || '',
+        createdBy: data.createdBy || (isAdmin ? 'admin' : 'host'),
+        status: data.status || (isAdmin ? 'accepted' : 'pending'),
+        updatedByAdmin: true
+      };
+    } catch (err) {
+      console.error('Failed to load event for editing:', err);
+    }
+  }
+});
 </script>
+
 
 <style scoped>
 .neon-border {

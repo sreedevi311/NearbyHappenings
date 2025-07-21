@@ -14,16 +14,16 @@
         <!-- Theme cards grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <div 
-                v-for="theme in filteredThemes" 
-                :key="theme.id"
-                @mouseenter="hoveredTheme = theme.id"
+                v-for="theme in themes" 
+                :key="theme._id"
+                @mouseenter="hoveredTheme = theme._id"
                 @mouseleave="hoveredTheme = null"
                 class="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden neon-border"
             >
                 <div class="relative h-48">
                     <img 
-                        :src="theme.image" 
-                        :alt="theme.description"
+                        :src="theme.posterUrl" 
+                        :alt="theme.name"
                         class="w-full h-full object-cover"
                     >
                     
@@ -35,11 +35,11 @@
                     </div>
                     
                     <div 
-                        v-if="hoveredTheme === theme.id"
+                        v-if="hoveredTheme === theme._id"
                         class="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-300"
                     >
                     <button 
-                    @click="$router.push({ path: `/events/${theme.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-')}` })"
+                    @click="$router.push({ path: `/events/${theme.name.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-')}` })"
                     class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-full font-medium flex items-center gap-1 transition-all"
                     >
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -57,7 +57,7 @@
                         :class="{'-translate-x-0 opacity-100': loaded, '-translate-x-10 opacity-0': !loaded}"
                         >
                             <h3 class="text-white text-lg font-bold">
-                                {{ theme.title }}
+                                {{ theme.name }}
                             </h3>
                         </div>
                     </div>
@@ -69,7 +69,7 @@
                         {{ theme.eventsCount }} events
                     </span>
                     <button 
-                        @click="toggleFavorite(theme.id)"
+                        @click="toggleFavorite(theme._id)"
                         class="p-1 rounded-full transition-colors"
                         :class="{
                             'text-yellow-400': theme.isFavorite,
@@ -83,197 +83,36 @@
                 </div>
             </div>
         </div>
-
-        <!-- EMPTY STATE -->
-        <div 
-            v-if="filteredThemes.length === 0"
-            class="text-center py-20"
-        >
-            <div class="max-w-md mx-auto">
-                <div class="w-24 h-24 mx-auto mb-6 text-teal-400 pulse-animation">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold mb-2">No themes found</h3>
-                <p class="text-gray-400">Try adjusting your search or filter criteria</p>
-                <button 
-                    @click="resetFilters"
-                    class="mt-6 px-6 py-2 rounded-full bg-teal-500 hover:bg-teal-600 text-white font-medium transition-all"
-                >
-                    Reset filters
-                </button>
-            </div>
-        </div>
     </div>
 </template>
 
-<script>
-import { ref, computed,onMounted } from 'vue';
+<script setup>
+    import { ref, computed,onMounted } from 'vue';
+    import {api} from '../services/api'
 
-export default {
-    setup() {
-        const themes = ref([
-            {
-                id: 1,
-                title: "Yoga & Wellness",
-                description: "Rejuvenate with holistic wellness programs, yoga sessions, and mindfulness workshops.",
-                tag: "Health",
-                eventsCount: 24,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            },
-            {
-                id: 2,
-                title: "Art & Culture",
-                description: "Explore creative expression through art exhibitions, cultural fairs, and craft workshops.",
-                tag: "Creative",
-                eventsCount: 18,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            },
-            {
-                id: 3,
-                title: "Music & Dance",
-                description: "Celebrate rhythmic harmony with concerts, dance performances, and musical collaborations.",
-                tag: "Entertainment",
-                eventsCount: 32,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            },
-            {
-                id: 4,
-                title: "Martial Arts & Fitness",
-                description: "Build discipline and strength through martial arts classes and fitness challenges.",
-                tag: "Fitness",
-                eventsCount: 15,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            },
-            {
-                id: 5,
-                title: "Gardening & Organic Living",
-                description: "Connect with nature through organic gardening workshops and sustainable living sessions.",
-                tag: "Eco",
-                eventsCount: 12,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            },
-            {
-                id: 6,
-                title: "First Aid & Health Awareness",
-                description: "Learn life-saving skills and promote health awareness through interactive programs.",
-                tag: "Health",
-                eventsCount: 9,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            },
-            {
-                id: 7,
-                title: "Theatre & Literature",
-                description: "Immerse in storytelling through plays, book discussions, and literary festivals.",
-                tag: "Creative",
-                eventsCount: 14,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            },
-            {
-                id: 8,
-                title: "Adventure & Rallies",
-                description: "Fuel your adventurous spirit with outdoor challenges and team rallies.",
-                tag: "Sports",
-                eventsCount: 22,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            },
-            {
-                id: 9,
-                title: "Career & Skill Development",
-                description: "Enhance your professional growth with career workshops and skill-building sessions.",
-                tag: "Education",
-                eventsCount: 27,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            },
-            {
-                id: 10,
-                title: "Community Service & Awareness",
-                description: "Make a difference through volunteer projects and community awareness initiatives.",
-                tag: "Social",
-                eventsCount: 19,
-                isFavorite: false,
-                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80"
-            }
-        ]);
+    const themes=ref([]);
+    const hoveredTheme = ref(null);
 
-        const allTags = ref(["All", "Health", "Creative", "Entertainment", "Fitness", "Eco", "Sports", "Education", "Social"]);
-        const activeTags = ref(["All"]);
-        const hoveredTheme = ref(null);
-
-        const filteredThemes = computed(() => {
-            let filtered = [...themes.value];
-            
-            // Filter by tags (skip if "All" is selected)
-            if (!activeTags.value.includes("All")) {
-                filtered = filtered.filter(theme => 
-                    activeTags.value.includes(theme.tag)
-                );
-            }
-            
-            return filtered;
-        });
-
-        const toggleFavorite = (id) => {
-            const theme = themes.value.find(t => t.id === id);
-            if (theme) {
-                theme.isFavorite = !theme.isFavorite;
-            }
-        };
-
-        const toggleTagFilter = (tag) => {
-            if (tag === "All") {
-                activeTags.value = ["All"];
-            } else {
-                const index = activeTags.value.indexOf(tag);
-                if (index === -1) {
-                    // Remove "All" if any other tag is selected
-                    activeTags.value = activeTags.value.filter(t => t !== "All");
-                    activeTags.value.push(tag);
-                } else {
-                    activeTags.value.splice(index, 1);
-                    // If no tags selected, default to "All"
-                    if (activeTags.value.length === 0) {
-                        activeTags.value = ["All"];
-                    }
-                }
-            }
-        };
-
-        const resetFilters = () => {
-            activeTags.value = ["All"];
-        };
-
-        const loaded = ref(false);
-
-        onMounted(() => {
-        // Trigger animations after component mounts
-        setTimeout(() => {
-            loaded.value = true;
-        }, 100);
-        });
-        return {
-            themes,
-            allTags,
-            activeTags,
-            hoveredTheme,
-            filteredThemes,
-            toggleFavorite,
-            toggleTagFilter,
-            resetFilters,
-            loaded,
-        };
+    const fetchEventThemes=async()=>{
+        const {data}=await api.get('/events/get-event-themes')
+        themes.value=data;
     }
-};
+    const toggleFavorite = (id) => {
+        const theme = themes.value.find(t => t.id === id);
+        if (theme) {
+            theme.isFavorite = !theme.isFavorite;
+        }
+    };
+
+
+    const loaded = ref(false);
+
+    onMounted(() => {
+    fetchEventThemes()
+    setTimeout(() => {
+        loaded.value = true;
+    }, 100);
+    });
 </script>
 
 <style scoped>

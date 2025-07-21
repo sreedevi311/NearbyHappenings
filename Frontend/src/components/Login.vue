@@ -68,6 +68,7 @@ const errors = ref({
   email: '',
   password: '',
 })
+const emit = defineEmits(['close', 'switchPanel'])
 
 const validateEmail = (email) => {
   const re = /\S+@\S+\.\S+/
@@ -98,7 +99,8 @@ const submitForm = async () => {
       await authStore.login(email.value, password.value)
 
       console.log("✅ Login success. Tokens saved in store")
-
+      emit('close')
+    emit('loginSuccess', authStore.user)
       // ✅ Redirect after successful login
       router.push('/')
 

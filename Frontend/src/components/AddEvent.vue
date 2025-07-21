@@ -19,7 +19,7 @@
 
     <!-- Add Section (Form) -->
     <div v-if="currentTab === 'Add'" class="text-center text-gray-400">
-      <HostEvent @add-event="addTask" @switch-tab="switchTab"/>
+      <HostEvent @switch-tab="switchTab"/>
     </div>
 
     <!-- Card Section for Added and Deleted -->
@@ -31,7 +31,7 @@
     >
       <TaskCard
         v-for="task in paginatedList"
-        :key="task.id"
+        :key="task._id"
         :task="task"
         :type="currentTab.toLowerCase()"
         @add="handleAdd"
@@ -71,7 +71,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import {api} from '../services/api'
 import TaskCard from './TaskCard.vue'
 import HostEvent from './HostEvent.vue'
 
@@ -80,49 +81,64 @@ const currentTab = ref('Add')
 const currentPage = ref(1)
 const itemsPerPage = 9
 
-const added = ref([
-  { id: 1, name: 'Task 1', date: '2025-07-15', time: '10:00 AM' },
-  { id: 2, name: 'Task 2', date: '2025-07-20', time: '2:00 PM' },
-  { id: 3, name: 'Task 3', date: '2025-07-22', time: '5:00 PM' },
-  { id: 4, name: 'Task 4', date: '2025-07-25', time: '1:00 PM' },
-  { id: 5, name: 'Task 5', date: '2025-07-28', time: '4:30 PM' },
-  { id: 6, name: 'Task 6', date: '2025-07-30', time: '3:00 PM' },
-  { id: 7, name: 'Task 1', date: '2025-07-15', time: '10:00 AM' },
-  { id: 8, name: 'Task 2', date: '2025-07-20', time: '2:00 PM' },
-  { id: 9, name: 'Task 3', date: '2025-07-22', time: '5:00 PM' },
-])
+const added = ref([])
 const deleted = ref([])
 
 function switchTab(tab) {
   currentTab.value = tab
   currentPage.value = 1
+  if (tab === 'Added') {
+    fetchAdminEvents()
+  }
 }
 
-function handleAdd(task) {
-  removeFromCurrentList(task)
-  added.value.unshift(task)
-  currentPage.value = 1
+async function handleAdd(task) {
+  try {
+    const res = await api.post('/events/admin-readd', task)
+    removeFromCurrentList(task)
+    added.value.unshift(res.data)
+    currentPage.value = 1
+  } catch (err) {
+    console.error('Failed to re-add event:', err)
+  }
 }
 
-function handleDelete(task) {
-  removeFromCurrentList(task)
-  deleted.value.unshift(task)
-  currentPage.value = 1
+async function handleDelete(task) {
+  try {
+    await api.delete(`/events/admin-deleted/${task._id}`) // DELETE request to backend
+    removeFromCurrentList(task) // remove from the "Added" list
+    deleted.value.unshift(task) // add to "Deleted"
+  } catch (err) {
+    console.error('Failed to delete event:', err)
+  }
 }
 
+const adminEvents = ref([])
+
+const fetchAdminEvents=async(req,res)=>{
+  try {
+    const res = await api.get('/events/admin-added')
+    adminEvents.value = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  } catch (err) {
+    console.error('Error fetching admin events:', err)
+  }
+}
 function removeFromCurrentList(task) {
-  const list = currentTab.value === 'Added' ? added : deleted
-  list.value = list.value.filter(t => t.id !== task.id)
+  if (currentTab.value === 'Added') {
+    adminEvents.value = adminEvents.value.filter(t => t._id !== task._id)
+  } else if (currentTab.value === 'Deleted') {
+    deleted.value = deleted.value.filter(t => t._id !== task._id)
+  }
 }
 
 const paginatedList = computed(() => {
-  const list = currentTab.value === 'Added' ? added.value : deleted.value
+  const list = currentTab.value === 'Added' ? adminEvents.value : deleted.value
   const start = (currentPage.value - 1) * itemsPerPage
   return list.slice(start, start + itemsPerPage)
 })
 
 const totalPages = computed(() => {
-  const list = currentTab.value === 'Added' ? added.value : deleted.value
+  const list = currentTab.value === 'Added' ? adminEvents.value : deleted.value
   return Math.ceil(list.length / itemsPerPage)
 })
 
@@ -138,29 +154,7 @@ function prevPage() {
   if (currentPage.value > 1) currentPage.value--
 }
 
-function addTask(task) {
-  const maxId = Math.max(0, ...added.value.map(t => t.id || 0), ...deleted.value.map(t => t.id || 0))
-  const newTask = {
-    id: maxId + 1,
-    name: task.name,
-    date: task.date,
-    time: task.time,
-    theme: task.theme,
-    city: task.city,
-    location: task.location,
-    orgName: task.orgName,
-    orgMobile: task.orgMobile,
-    orgEmail: task.orgEmail,
-    regLink: task.regLink,
-    regFee: task.regFee,
-    targetAudience: task.targetAudience,
-    capacity: task.capacity,
-    essentials: task.essentials,
-    poster: task.poster,
-  }
-  added.value.unshift(newTask)
-  currentPage.value = 1
-}
+onMounted(fetchAdminEvents)
 </script>
 
 <style scoped>

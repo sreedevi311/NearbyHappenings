@@ -9,7 +9,7 @@
         v-model="email"
         type="email" 
         placeholder="Enter your email" 
-        class="border p-3 rounded w-full mb-3  bg-gray-800 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400" 
+        class="border p-3 rounded w-full mb-3 bg-gray-800 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400" 
       />
       <p v-if="errors.email" class="text-red-500 text-sm mb-2">{{ errors.email }}</p>
 
@@ -18,7 +18,7 @@
         v-model="password"
         type="password" 
         placeholder="Create a password" 
-        class="border p-3 rounded w-full mb-3  bg-gray-800 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400" 
+        class="border p-3 rounded w-full mb-3 bg-gray-800 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400" 
       />
       <p v-if="errors.password" class="text-red-500 text-sm mb-2">{{ errors.password }}</p>
 
@@ -27,14 +27,14 @@
         v-model="confirmPassword"
         type="password" 
         placeholder="Confirm your password" 
-        class="border p-3 rounded w-full mb-3  bg-gray-800 text-gray-200 placeholder-gray-500focus:outline-none focus:ring-2 focus:ring-teal-400" 
+        class="border p-3 rounded w-full mb-3 bg-gray-800 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400" 
       />
       <p v-if="errors.confirmPassword" class="text-red-500 text-sm mb-2">{{ errors.confirmPassword }}</p>
 
       <!-- Submit button -->
       <button 
         @click="submitForm"
-        class="bg-teal-500 hover:bg-t eal-600 text-white p-3 rounded w-full mb-4 font-semibold"
+        class="bg-teal-500 hover:bg-teal-600 text-white p-3 rounded w-full mb-4 font-semibold"
       >
         Create Account
       </button>
@@ -47,7 +47,7 @@
       </div>
 
       <!-- Google button -->
-      <button class="flex items-center justify-center border p-3 rounded w-full hover:bg-gray-700  bg-gray-800 text-gray-200 placeholder-gray-500">
+      <button class="flex items-center justify-center border p-3 rounded w-full hover:bg-gray-700 bg-gray-800 text-gray-200">
         <img src="https://static.vecteezy.com/system/resources/previews/011/598/471/original/google-logo-icon-illustration-free-vector.jpg" alt="Google" class="w-8 h-8 mr-2" />
         Continue with Google
       </button>
@@ -63,15 +63,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { api } from '@/services/api' // Adjust path as needed
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'  // adjust path if needed
+import { useAuthStore } from '@/stores/auth'
 
 const email = ref('')
 const password = ref('')
-
-const router = useRouter()
-const authStore = useAuthStore()
 const confirmPassword = ref('')
 
 const errors = ref({
@@ -79,6 +75,11 @@ const errors = ref({
   password: '',
   confirmPassword: '',
 })
+
+const emit = defineEmits(['close', 'loginSuccess', 'switchPanel'])
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const validateEmail = (email) => {
   const re = /\S+@\S+\.\S+/
@@ -92,6 +93,7 @@ const submitForm = async () => {
     confirmPassword: '',
   }
 
+  // Validation
   if (!email.value) {
     errors.value.email = 'Email is required'
   } else if (!validateEmail(email.value)) {
@@ -110,22 +112,18 @@ const submitForm = async () => {
     errors.value.confirmPassword = 'Passwords do not match'
   }
 
+  // If no errors, sign up
   if (!errors.value.email && !errors.value.password && !errors.value.confirmPassword) {
     try {
-      console.log("🛂 Submitting signup:", email.value)
-
-      // ✅ Use authStore to sign up
       await authStore.signup(email.value, password.value)
 
-      console.log("✅ Signup success. Tokens saved in store")
-
-      // ✅ Navigate after successful signup
-      router.push('/')
+      // ✅ Emit login success + close modal
+      emit('close')
+      emit('loginSuccess', authStore.user)
 
     } catch (error) {
       console.error("❌ Signup failed:", error.response?.data || error.message)
     }
   }
 }
-
 </script>

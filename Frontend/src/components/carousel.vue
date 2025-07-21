@@ -10,21 +10,21 @@
            :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
         <div
           v-for="(event, index) in events"
-          :key="event.id"
+          :key="event._id"
           class="w-[900px] flex-shrink-0 px-4 relative"
         >
           <div
             class="relative h-[420px] w-[850px] overflow-hidden rounded-xl border border-teal-400/20 bg-gray-900/20 shadow-xl"
           >
             <img
-              :src="event.image"
-              :alt="event.name"
+              :src="event.posterUrl"
+              :alt="event.eventName"
               class="w-full h-full object-cover rounded-xl"
             />
 
             <!-- Event Info -->
             <div class="absolute bottom-0 left-0 right-0 px-6 pt-12 pb-6 h-40 bg-gradient-to-t from-black/90 to-transparent z-10">
-              <h3 class="text-2xl font-bold text-white mb-2">{{ event.name }}</h3>
+              <h3 class="text-2xl font-bold text-white mb-2">{{ event.eventName }}</h3>
               <div class="flex flex-wrap items-center text-teal-300 gap-x-4 gap-y-2">
                 <div class="flex items-center">
                   <span class="material-icons mr-1 text-teal-400">event</span>
@@ -36,7 +36,7 @@
                 </div>
                 <div class="flex items-center">
                   <span class="material-icons mr-1 text-teal-400">location_on</span>
-                  <span>{{ event.location }}</span>
+                  <span>{{ event.location.address }}</span>
                 </div>
               </div>
             </div>

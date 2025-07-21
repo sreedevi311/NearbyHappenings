@@ -7,7 +7,7 @@ require('dotenv').config(); // optional if using .env for DB URI
 const eventSchema = new mongoose.Schema({
   eventName: String,
   theme: String,
-  date: String,
+  date: Date,
   time: String,
   city: String,
   location: {
@@ -16,6 +16,8 @@ const eventSchema = new mongoose.Schema({
     lng: Number,
   },
   posterUrl: String,
+  tag:String,
+  description:String,
   organizer: {
     name: String,
     email: String,
@@ -30,9 +32,10 @@ const eventSchema = new mongoose.Schema({
   },
   createdBy: String,
   createdAt: Date,
-  tag:String,
-  description:String
-});
+  status: String,
+  updatedByAdmin: Boolean,
+  
+}, { timestamps: true });
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://sree:sree%40311@nearby-happenings-db.canncfd.mongodb.net/nearby_happenings_db?retryWrites=true&w=majority&appName=nearby-happenings-db';
 

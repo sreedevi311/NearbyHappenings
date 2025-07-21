@@ -57,5 +57,25 @@ export const useAuthStore = defineStore('auth', {
         this.logout()
       }
     },
+        async updatePreferences(city, interests) {
+      try {
+        const res = await api.put('/auth/update-preferences', {
+          city,
+          interests
+        }, {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          }
+        })
+
+        if (res.data.success) {
+          this.user = res.data.user // update user data in store
+        } else {
+          console.error('Update failed:', res.data.error)
+        }
+      } catch (err) {
+        console.error('Failed to update preferences:', err)
+      }
+    },
   },
 })

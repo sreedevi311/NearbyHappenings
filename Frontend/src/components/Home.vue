@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-col min-h-screen bg-black text-gray-300">
     <!-- Header -->
-      <header class="sticky top-0 z-10 bg-black shadow-md border border-gray-800 text-green-300 px-4 pb-3 flex items-center justify-between gap-4  transition-all">
-      <div class="flex items-center w-full px-4 pt-6 pb-3  gap-4 justify-between">
+    <header class="sticky top-0 z-10 bg-black shadow-md border border-gray-800 text-green-300 px-4 pb-3 flex items-center justify-between gap-4  transition-all">
+      <div class="flex items-center w-full px-4 pt-6 gap-4 justify-between">
         <!-- Logo -->
         <img
           src="../nearbyHappeningsLogo.png"
@@ -23,37 +23,39 @@
           <!-- Tag pills -->
           <div
             v-if="searchQuery"
-            class="absolute top-full left-0 w-full flex gap-2 mt-5 z-50 overflow-x-auto whitespace-nowrap hide-scrollbar px-1"
+            class="absolute top-full left-0 w-full flex gap-2 mt-2 z-50 overflow-x-auto whitespace-nowrap hide-scrollbar px-1"
           >
             <button
               v-for="type in filteredEventTypes"
               :key="type"
               @click="selectType(type)"
-              class="border border-teal-500 text-teal-400 rounded-full px-4 py-1.5 text-sm font-medium transition-all
-                hover:bg-teal-600/20 hover:border-teal-500 hover:text-teal-400"
+              class="border border-teal-500 text-teal-400 rounded-full px-4 py-1.5 text-sm font-medium transition-all hover:bg-teal-600/20 hover:border-teal-500 hover:text-teal-400"
             >
               {{ type }}
             </button>
           </div>
         </div>
 
-        <!-- Location Selector -->
-        <div class="flex items-center gap-1 text-gray-400 hover:text-teal-400 cursor-pointer transition-colors pr-4">
+        <!-- Location -->
+        <div
+  class="flex items-center gap-1 text-gray-400 hover:text-teal-400 cursor-pointer transition-colors pr-4"
+  @click="showLocationModal = true"
+>
           <span class="material-icons text-teal-400">location_on</span>
-          <span class="text-sm font-medium">Vizag</span>
+          <span class="text-sm font-medium">{{ selectedCity || 'Select Location' }}</span>
         </div>
 
         <!-- Sign In / Profile -->
         <div>
           <button
-            v-if="!isSignedIn"
+            v-if="!isLoggedIn"
             @click="openPanel('login')"
             class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-4 py-2 rounded-full transition-colors"
           >
             Sign In
           </button>
-          <div v-else class="flex items-center gap-2 cursor-pointer">
-            <span class="material-icons text-teal-400 text-5xl mb-1">account_circle</span>
+          <div v-else class="flex items-center cursor-pointer px-4">
+            <span class="material-icons text-teal-400 pt-1" style="font-size: 35px" @click="openPanel('profile')">account_circle</span>
           </div>
         </div>
       </div>
@@ -93,30 +95,27 @@
   </aside>
 
 
-
       <!-- Main Content -->
       <main class="flex-1 p-10 pt-3 ml-28 overflow-x-hidden">
-
-      <!-- Empty space for search results -->
-      <div class="h-8 w-328 bg-transparent"></div>
-
+         <div class="h-8 w-328 bg-transparent"></div>
         <div>
-          <carousel :events="upcomingEvents"/>
+          <carousel :events="upcomingEvents" />
         </div>
 
-        <section>
-          <h2 class="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300">Featured Events</h2>
-          <div class="flex gap-8 overflow-x-auto pb-4 pt-4 hide-scrollbar">
-            <EventCard class="min-w-[300px]" v-for="event in interestedEvents" :key="event.id" :event="event" />
-          </div>
-        </section>
+        <div v-if="Object.keys(groupedEvents).length" class="space-y-10 px-4 py-6">
+    <div v-for="(events, theme) in groupedEvents" :key="theme">
+      <h2 class="text-2xl font-bold text-teal-400 mb-4">{{ theme }} Events</h2>
 
-        <section>
-          <h2 class="text-xl font-bold mb-4 mt-4 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300">Featured Events</h2>
-          <div class="flex gap-8 overflow-x-auto pb-4 pt-4 hide-scrollbar">
-            <EventCard class="min-w-[300px]" v-for="event in interestedEvents" :key="event.id" :event="event" />
-          </div>
-        </section>
+      <div class="flex gap-6 overflow-x-auto hide-scrollbar pb-4">
+        <EventCard
+          v-for="event in events"
+          :key="event._id"
+          :event="event"
+          class="min-w-[300px] mt-4"
+        />
+      </div>
+    </div>
+  </div>
 
       </main>
     </div>
@@ -171,20 +170,52 @@
         >
           <span class="material-icons">close</span>
         </button>
-        <component :is="activeComponent" @switchPanel="handleSwitch"></component>
+       <component
+  :is="activeComponent"
+  @switchPanel="handleSwitch"
+  @loginSuccess="handleLoginSuccess"
+  @signupSuccess="handleLoginSuccess"
+  @signOut="handleSignOut"
+/>
+
       </div>
     </transition>
+    <LocationSelector
+  v-if="showLocationModal"
+  @select="handleLocationSelect"
+  @close="showLocationModal = false"
+/>
+<InterestSelector
+  v-if="showInterestModal"
+  @submit="handleThemeSelection"
+  @close="showInterestModal = false"
+/>
   </div>
+  
 </template>
 
+
 <script setup>
-import { ref,computed } from 'vue'
+import { ref,computed,watch } from 'vue'
+import {api} from '../services/api'
 import EventCard from './EventCard.vue'
 import carousel from './carousel.vue'
 import Login from './Login.vue'
 import Signup from './SignUp.vue'
+import Profile from './Profile.vue'
+import LocationSelector from './LocationSelector.vue'
+import InterestSelector from './InterestSelector.vue'
+import { useAuthStore } from '@/stores/auth'
+const authStore = useAuthStore()
 
+const selectedCity = ref('')
+const selectedThemes = ref([])
 
+const showLocationModal = ref(false)
+const showInterestModal = ref(false)
+
+const isLoggedIn = computed(() => !!authStore.user)
+const userEmail = computed(() => authStore.user?.email || 'User')
 const activeNav = ref('Home')
 const navItems = ref([
   { name: 'Home', icon: 'home', route: '/' },
@@ -218,195 +249,50 @@ function selectType(type) {
   searchQuery.value = type
 }
 
-const upcomingEvents = ref([
-  {
-    id: 1,
-    name: 'Sunrise Yoga Class',
-    date: 'Oct 15, 2023',
-    time: '7:00 AM',
-    distance: '0.5 miles',
-    location: 'Riverside Park',
-    theme: 'health',
-    image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Group of people doing yoga outdoors at sunrise with city skyline in background'
-  },
-  {
-    id: 2,
-    name: 'Local Art Festival',
-    date: 'Oct 18, 2023',
-    time: '10:00 AM',
-    distance: '1.2 miles',
-    location: 'Downtown Square',
-    theme: 'art',
-    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80',
-    alt: 'Colorful outdoor art festival with tents displaying paintings and sculptures'
-  },
-  {
-    id: 3,
-    name: 'Indie Music Night',
-    date: 'Oct 20, 2023',
-    time: '8:00 PM',
-    distance: '0.8 miles',
-    location: 'The Blue Note',
-    theme: 'music',
-    image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Live band performing on stage with neon lights in a small intimate venue'
-  },
-  {
-    id: 4,
-    name: 'Farmers Market',
-    date: 'Oct 22, 2023',
-    time: '9:00 AM',
-    distance: '1.5 miles',
-    location: 'Central Park West',
-    theme: 'food',
-    image: 'https://images.unsplash.com/photo-1606787366850-de6330128bfc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Outdoor farmers market with fresh produce, flowers and local vendors'
-  },
-  {
-    id: 5,
-    name: 'Jazz in the Garden',
-    date: 'Oct 16, 2023',
-    time: '6:30 PM',
-    distance: '1.8 miles',
-    location: 'Botanical Gardens',
-    theme: 'music',
-    image: 'https://images.unsplash.com/photo-1496293455970-f8581aae0e3b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Jazz quartet performing in a lush garden setting with string lights'
-  },
-  {
-    id: 6,
-    name: 'Tech Meetup',
-    date: 'Oct 19, 2023',
-    time: '7:00 PM',
-    distance: '2.1 miles',
-    location: 'Innovation Center',
-    theme: 'community',
-    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80',
-    alt: 'Group of professionals networking at a modern tech meetup with laptops and presentations'
-  },
-  {
-    id: 7,
-    name: 'Brewery Tour',
-    date: 'Oct 21, 2023',
-    time: '3:00 PM',
-    distance: '1.3 miles',
-    location: 'Local Craft Brewery',
-    theme: 'food',
-    image: 'https://images.unsplash.com/photo-1566633806327-68e152aaf26d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-    alt: 'Brewery equipment with shiny copper tanks and people sampling craft beer'
-  },
-  {
-    id: 8,
-    name: 'Book Reading',
-    date: 'Oct 23, 2023',
-    time: '5:30 PM',
-    distance: '0.7 miles',
-    location: 'Books & Beans',
-    theme: 'community',
-    image: 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Author reading a book to an attentive audience in a cozy bookstore cafe'
-  }
-]);
+const upcomingEvents=ref([])
 
-const interestedEvents = ref([
-  {
-    id: 5,
-    name: 'Jazz in the Garden',
-    date: 'Oct 16, 2023',
-    time: '6:30 PM',
-    distance: '1.8 miles',
-    location: 'Botanical Gardens',
-    theme: 'music',
-    image: 'https://images.unsplash.com/photo-1496293455970-f8581aae0e3b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Jazz quartet performing in a lush garden setting with string lights'
-  },
-  {
-    id: 6,
-    name: 'Tech Meetup',
-    date: 'Oct 19, 2023',
-    time: '7:00 PM',
-    distance: '2.1 miles',
-    location: 'Innovation Center',
-    theme: 'community',
-    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80',
-    alt: 'Group of professionals networking at a modern tech meetup with laptops and presentations'
-  },
-  {
-    id: 7,
-    name: 'Brewery Tour',
-    date: 'Oct 21, 2023',
-    time: '3:00 PM',
-    distance: '1.3 miles',
-    location: 'Local Craft Brewery',
-    theme: 'food',
-    image: 'https://images.unsplash.com/photo-1566633806327-68e152aaf26d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-    alt: 'Brewery equipment with shiny copper tanks and people sampling craft beer'
-  },
-  {
-    id: 8,
-    name: 'Book Reading',
-    date: 'Oct 23, 2023',
-    time: '5:30 PM',
-    distance: '0.7 miles',
-    location: 'Books & Beans',
-    theme: 'community',
-    image: 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Author reading a book to an attentive audience in a cozy bookstore cafe'
-  },
-  {
-    id: 1,
-    name: 'Sunrise Yoga Class',
-    date: 'Oct 15, 2023',
-    time: '7:00 AM',
-    distance: '0.5 miles',
-    location: 'Riverside Park',
-    theme: 'health',
-    image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Group of people doing yoga outdoors at sunrise with city skyline in background'
-  },
-  {
-    id: 2,
-    name: 'Local Art Festival',
-    date: 'Oct 18, 2023',
-    time: '10:00 AM',
-    distance: '1.2 miles',
-    location: 'Downtown Square',
-    theme: 'art',
-    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640&q=80',
-    alt: 'Colorful outdoor art festival with tents displaying paintings and sculptures'
-  },
-  {
-    id: 3,
-    name: 'Indie Music Night',
-    date: 'Oct 20, 2023',
-    time: '8:00 PM',
-    distance: '0.8 miles',
-    location: 'The Blue Note',
-    theme: 'music',
-    image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Live band performing on stage with neon lights in a small intimate venue'
-  },
-  {
-    id: 4,
-    name: 'Farmers Market',
-    date: 'Oct 22, 2023',
-    time: '9:00 AM',
-    distance: '1.5 miles',
-    location: 'Central Park West',
-    theme: 'food',
-    image: 'https://images.unsplash.com/photo-1606787366850-de6330128bfc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=640&q=80',
-    alt: 'Outdoor farmers market with fresh produce, flowers and local vendors'
-  }
-]);
+const fetchUpcomingEvents= async()=>{
+  if (!authStore.user?._id) return
+  const userId = authStore.user._id
+
+  const { data } = await api.get(`/events/user-city-upcoming-day-events/${userId}`);
+  upcomingEvents.value = data;
+}
+
+const groupedEvents = ref({})
+
+const fetchGroupedEvents = async () => {
+  if (!authStore.user?._id) return
+  const userId = authStore.user._id
+
+  const { data } = await api.get(`/events/user-interested-events/${userId}`)
+  console.log('Fetched events:', data)
+
+  groupedEvents.value = data.reduce((acc, event) => {
+    const themeKey = event.theme?.name || event.theme
+    if (!acc[themeKey]) acc[themeKey] = []
+    acc[themeKey].push(event)
+    return acc
+  }, {})
+
+  console.log('Grouped Events (raw):', JSON.parse(JSON.stringify(groupedEvents.value)))
+}
+
 
 const showPanel = ref(false)
 const activeComponent = ref(null)
 
 function openPanel(type) {
-  activeComponent.value = type === 'login' ? Login : Signup
+  if (type === 'login') {
+    activeComponent.value = Login
+  } else if (type === 'signup') {
+    activeComponent.value = Signup
+  } else if (type === 'profile') {
+    activeComponent.value = Profile
+  }
   showPanel.value = true
 }
+
 function closePanel() {
   showPanel.value = false
 }
@@ -415,8 +301,54 @@ function handleSwitch(type) {
     activeComponent.value = Signup
   } else if (type === 'login') {
     activeComponent.value = Login
+  }else if (type === 'profile') {
+    activeComponent.value = Profile
+  }
+  showPanel.value=true
+}
+function handleLoginSuccess(user) {
+  isSignedIn.value = true
+  closePanel()
+  console.log('User logged in:', user.email) 
+  if (!authStore.user?.location || !authStore.user?.interests?.length) {
+    showLocationModal.value = true
   }
 }
+
+function handleSignOut() {
+  isSignedIn.value = false
+  closePanel()
+}
+function handleLocationSelect(city) {
+  selectedCity.value = city
+  showLocationModal.value = false
+  showInterestModal.value = true // Move to interest selection
+}
+
+async function handleThemeSelection(themes) {
+  selectedThemes.value = themes
+  showInterestModal.value = false
+
+  // Now save to DB via Pinia store
+  try {
+    await authStore.updatePreferences(selectedCity.value, selectedThemes.value)
+    console.log('Preferences saved!')
+  } catch (err) {
+    console.error('Failed to save preferences:', err)
+  }
+}
+
+watch(
+  () => authStore.user?._id,
+  (id) => {
+    if (id) {
+      fetchGroupedEvents()
+      fetchUpcomingEvents()
+    }
+  },
+  { immediate: true }
+)
+
 </script>
 
 <style scoped>

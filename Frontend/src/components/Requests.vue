@@ -62,25 +62,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed,onMounted } from 'vue'
+import {api} from '../services/api'
 import RequestCard from './RequestCard.vue'
 
 const tabs = ['Requests', 'Accepted', 'Declined']
 const currentTab = ref('Requests')
 const currentPage = ref(1)
 const itemsPerPage = 9
-
-const requests = ref([
-  { id: 1, name: 'VueConf 2025', date: '2025-07-15', time: '10:00 AM' },
-  { id: 2, name: 'DevFest India', date: '2025-07-20', time: '2:00 PM' },
-  { id: 3, name: 'HackathonX', date: '2025-07-22', time: '5:00 PM' },
-  { id: 4, name: 'JS Party', date: '2025-07-25', time: '1:00 PM' },
-  { id: 5, name: 'FOSS Meetup', date: '2025-07-28', time: '4:30 PM' },
-  { id: 6, name: 'Tailwind Workshop', date: '2025-07-30', time: '3:00 PM' },
-  { id: 7, name: 'VueConf 2025', date: '2025-07-15', time: '10:00 AM' },
-  { id: 8, name: 'DevFest India', date: '2025-07-20', time: '2:00 PM' },
-  { id: 9, name: 'HackathonX', date: '2025-07-22', time: '5:00 PM' },
-])
 
 const accepted = ref([])
 const declined = ref([])
@@ -90,20 +79,33 @@ function switchTab(tab) {
   currentPage.value = 1
 }
 
-function handleAccept(request) {
+async function handleAccept(request,status) {
+  await api.put(`/events/update-status/${request._id}`, {status})
   removeFromCurrentList(request)
   accepted.value.push(request)
 }
 
-function handleDecline(request) {
+async function handleDecline(request,status) {
+  await api.put(`/events/update-status/${request._id}`, {status})
   removeFromCurrentList(request)
   declined.value.push(request)
+}
+
+const pendingRequests = ref([])
+
+const fetchPendingRequests = async () => {
+  try {
+    const res = await api.get('/events/pending-requests') // your backend URL
+    pendingRequests.value = res.data
+  } catch (error) {
+    console.error('Error fetching pending events:', error)
+  }
 }
 
 function removeFromCurrentList(request) {
   const list =
     currentTab.value === 'Requests'
-      ? requests
+      ? pendingRequests
       : currentTab.value === 'Accepted'
       ? accepted
       : declined
@@ -114,7 +116,7 @@ function removeFromCurrentList(request) {
 const paginatedList = computed(() => {
   const list =
     currentTab.value === 'Requests'
-      ? requests.value
+      ? pendingRequests.value
       : currentTab.value === 'Accepted'
       ? accepted.value
       : declined.value
@@ -125,7 +127,7 @@ const paginatedList = computed(() => {
 const hasNextPage = computed(() => {
   const list =
     currentTab.value === 'Requests'
-      ? requests.value
+      ? pendingRequests.value
       : currentTab.value === 'Accepted'
       ? accepted.value
       : declined.value
@@ -138,6 +140,8 @@ function nextPage() {
 function prevPage() {
   if (currentPage.value > 1) currentPage.value--
 }
+
+onMounted(fetchPendingRequests)
 </script>
 <style scoped>
 .fade-move-enter-active,

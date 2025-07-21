@@ -42,12 +42,7 @@ const userSchema = new mongoose.Schema({
     }
   ],
 
-  interestedEvents: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Event',
-    }
-  ],
+  interests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Theme' }],
 
   refreshToken: {
     type: String,

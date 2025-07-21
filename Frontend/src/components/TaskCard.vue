@@ -2,6 +2,7 @@
   <div
     @mouseenter="hovered = true"
     @mouseleave="hovered = false"
+    @click="navigateToEdit"
     :class="{
       'theme-hover transform transition-all duration-300': true,
       'border-teal-500': hovered
@@ -11,7 +12,7 @@
     <!-- Top bar: Title + Buttons -->
     <div class="flex justify-between items-center bg-black/60 rounded-md px-3 py-3 mb-3">
       <h3 class="text-white text-lg font-bold">
-        {{ task.name }}
+        {{ task.eventName }}
       </h3>
       <div class="flex gap-3">
         <button
@@ -42,11 +43,11 @@
     <div class="text-sm text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400 flex items-center gap-4 m-4">
       <div class="flex items-center gap-1">
         <span class="material-icons">event</span>
-        <span>{{ task.date }}</span>
+        <span>{{ formatDate(task.createdAt) }}</span>
       </div>
       <div class="flex items-center gap-1">
         <span class="material-icons">schedule</span>
-        <span>{{ task.time }}</span>
+        <span>{{ formatTime(task.createdAt) }}</span>
       </div>
     </div>
   </div>
@@ -54,17 +55,33 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 const props = defineProps({
   task: Object,
   type: String
 })
 const hovered = ref(false)
 
+const router = useRouter()
+function navigateToEdit() {
+  router.push(`/admin/edit-event/${props.task._id}`)
+}
+
 const statusLabel = computed(() => {
   if (props.type === 'added') return 'Added on'
   if (props.type === 'deleted') return 'Deleted on'
   return 'Task'
 })
+
+const formatDate = (isoString) => {
+  const date = new Date(isoString)
+  return date.toLocaleDateString() // e.g., "7/17/2025"
+}
+
+const formatTime = (isoString) => {
+  const date = new Date(isoString)
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) // e.g., "04:45 PM"
+}
 </script>
 
 <style scoped>

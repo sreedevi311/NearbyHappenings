@@ -8,9 +8,9 @@
       <div v-if="events.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <div
           v-for="event in events"
-          :key="event.id"
+          :key="event._id"
           class="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden neon-border cursor-pointer"
-          @click="goToEvent(event)"
+          @click="goToEventDetails(event._id)"
         >
           <div class="relative h-48">
             <img :src="event.posterUrl" :alt="event.name" class="w-full h-full object-cover" />
@@ -30,7 +30,7 @@
               <span class="material-icons text-teal-400 text-base mr-1">near_me</span>
               {{ event.distance }}
             </p>
-            <p class="flex items-center text-sm">
+            <p v-if="event.location && event.location.address" class="flex items-center text-sm">
               <span class="material-icons text-teal-400 text-base mr-1">location_on</span>
               {{ event.location.address }}
             </p>
@@ -39,7 +39,7 @@
       </div>
 
       <div v-else class="text-center py-20">
-        <h2 class="text-2xl font-bold">No events found</h2>
+        <h2 class="text-2xl font-bold">loading...</h2>
       </div>
     </div>
   </div>
@@ -67,12 +67,9 @@ const fetchEvents = async () => {
   }
 }
 
-const goToEvent = (event) => {
-  router.push({ 
-    name: 'event-details', 
-    params: { theme: event.theme, id: event._id },
-    state: { event }
-  })
+const goToEventDetails = (event_id) => {
+  console.log('hello')
+  router.push(`/event/${event_id}`)
 }
 
 onMounted(async () => {

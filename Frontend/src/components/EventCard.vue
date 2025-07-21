@@ -11,21 +11,21 @@
     <!-- Image with title overlay -->
     <div class="relative">
       <img
-        :src="event.image"
-        :alt="event.alt"
+        :src="event.posterUrl"
+        :alt="event.eventName"
         class="w-full h-48 object-cover"
       >
       <!-- Tag on top right -->
       <div
         class="absolute top-2 right-2 bg-teal-500/90 text-xs font-bold px-2 py-1 rounded-full text-white"
       >
-        {{ event.theme }}
+        {{ event.tag }}
       </div>
       <!-- Title overlay -->
       <h3
         class="absolute bottom-0 left-0 w-full bg-black/60 text-white text-lg font-bold px-3 py-2"
       >
-        {{ event.name }}
+        {{ event.eventName }}
       </h3>
     </div>
 
@@ -43,7 +43,7 @@
       </p>
       <p class="flex items-center text-sm">
         <span class="material-icons text-teal-400 text-base mr-1">location_on</span>
-        {{ event.location }}
+        {{ event.location.address }}
       </p>
     </div>
   </div>
