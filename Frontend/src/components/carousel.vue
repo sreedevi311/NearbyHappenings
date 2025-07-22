@@ -28,7 +28,7 @@
               <div class="flex flex-wrap items-center text-teal-300 gap-x-4 gap-y-2">
                 <div class="flex items-center">
                   <span class="material-icons mr-1 text-teal-400">event</span>
-                  <span>{{ event.date }}</span>
+                  <span>{{ dayjs(event.date).format('MMMM D, YYYY') }}</span>
                 </div>
                 <div class="flex items-center">
                   <span class="material-icons mr-1 text-teal-400">schedule</span>
@@ -79,6 +79,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import dayjs from 'dayjs'
 
 const props = defineProps({
   events: {

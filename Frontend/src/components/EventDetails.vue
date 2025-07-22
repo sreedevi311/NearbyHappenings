@@ -59,7 +59,7 @@
       <div class="w-full md:w-[420px] h-[450px] bg-[#1b2236] neon-border rounded-xl p-6 shadow-lg space-y-4">
         <div class="flex items-center gap-2">
           <span class="material-icons text-teal-400 text-base mr-1 align-middle">calendar_today</span>
-          <span class="gradient-text">{{ eventStore.selectedEvent.date }}</span>
+          <span class="gradient-text">{{ dayjs(eventStore.selectedEvent.date).format('MMMM D, YYYY') }}</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="material-icons text-teal-400 text-base mr-1 align-middle">schedule</span>
@@ -111,6 +111,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useEventStore } from '@/stores/event'
+import dayjs from 'dayjs'
 
 const route = useRoute()
 const eventStore = useEventStore()

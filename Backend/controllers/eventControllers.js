@@ -179,33 +179,31 @@ const userInterestedEvents = async (req, res) => {
 
 const userCityUpcomingDayEvents = async (req, res) => {
   try {
-    console.log("📥 Incoming request to fetch user city upcoming events");
+    console.log("📥 Fetching 10 upcoming events for user city");
 
     const userId = req.params.userId;
-    console.log("🔍 User ID from params:", userId);
-
     const user = await User.findById(userId);
-    console.log("👤 Found user:", user);
-
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const userCity = user.city;
     const today = new Date();
-    console.log("📍 User city:", userCity);
-    console.log("📅 Today's date:", today.toISOString().slice(0, 10));
+    today.setHours(0, 0, 0, 0); // Ensure time is set to start of the day
 
     const events = await Event.find({
       city: userCity,
-      date: { $gte: today },
-    });
+      date: { $gte: today.toISOString().slice(0, 10) },
+    })
+      .sort({ date: 1 })     // Sort by soonest first
+      .limit(10);            // Limit to 10 events
 
-    console.log("🎉 Found upcoming events:", events.length);
-    res.status(200).json(events);
+    console.log("🎉 Found events:", events.length);
+    return res.status(200).json(events);
   } catch (err) {
-    console.error("❌ Error in upcoming events controller:", err.message);
+    console.error("❌ Error fetching events:", err.message);
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 
 module.exports = { getEventsByTheme,saveFormEvent,pendingRequests,updateStatusById,adminAdded,deleteById,adminReAdd,getEventById ,adminUpdatedEventInfo,getEventThemes,getAllCities,userInterestedEvents,userCityUpcomingDayEvents};

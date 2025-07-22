@@ -321,7 +321,7 @@ watch(
   (id) => {
     if (id) {
       eventStore.fetchGroupedEvents(id)
-      //eventStore.fetchUpcomingEvents(id)
+      eventStore.fetchUpcomingEvents(id)
     }
   },
   { immediate: true }

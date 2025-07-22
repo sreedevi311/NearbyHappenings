@@ -1,8 +1,5 @@
 const mongoose = require('mongoose');
-//const fs = require('fs');
-require('dotenv').config(); // optional if using .env for DB URI
-
-//const eventData = JSON.parse(fs.readFileSync('./updated_theme_city_events.json', 'utf-8'));
+require('dotenv').config();
 
 const eventSchema = new mongoose.Schema({
   eventName: String,
@@ -16,8 +13,8 @@ const eventSchema = new mongoose.Schema({
     lng: Number,
   },
   posterUrl: String,
-  tag:String,
-  description:String,
+  tag: String,
+  description: String,
   organizer: {
     name: String,
     email: String,
@@ -34,20 +31,18 @@ const eventSchema = new mongoose.Schema({
   createdAt: Date,
   status: String,
   updatedByAdmin: Boolean,
-  
 }, { timestamps: true });
+
+const Event = mongoose.model('Event', eventSchema);
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://sree:sree%40311@nearby-happenings-db.canncfd.mongodb.net/nearby_happenings_db?retryWrites=true&w=majority&appName=nearby-happenings-db';
 
 mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
     console.log('✅ Connected to MongoDB Atlas');
-    //await Event.insertMany(eventData);
-    //console.log('🎉 Events inserted successfully');
-    //mongoose.disconnect();
   })
   .catch(err => {
     console.error('❌ Error connecting/inserting:', err);
   });
 
-  module.exports = mongoose.model('Event', eventSchema);
+module.exports = Event;
