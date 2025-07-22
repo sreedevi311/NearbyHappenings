@@ -5,7 +5,7 @@
       <p class="text-black-600 mb-6">{{ email }}</p>
 
       <button
-        @click="signOut"
+        @click="$emit('SignOut')"
         class="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-full transition-colors"
       >
         Sign Out
@@ -16,16 +16,4 @@
 
 <script setup>
 const props = defineProps({ email: String })
-
-import { useAuthStore } from '@/stores/auth'
-const authStore = useAuthStore()
-
-async function signOut() {
-  try {
-    await authStore.logout()
-    console.log('logged out!')
-  } catch (err) {
-    console.error('Failed to save preferences:', err)
-  }
-}
 </script>

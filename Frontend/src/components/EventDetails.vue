@@ -1,15 +1,16 @@
 <template>
-  <div v-if="event" class="min-h-screen bg-[#0b0f1a] text-white px-4 py-8 md:px-16 font-sans">
+  <transition name="fade">
+  <div v-if="eventStore.selectedEvent" class="min-h-screen bg-[#0b0f1a] text-white px-4 py-8 md:px-16 font-sans">
     <h1 class="text-3xl md:text-4xl font-bold mb-6 pb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300 capitalize animate-slide-down">
-      {{ event.eventName }}
+      {{ eventStore.selectedEvent.eventName }}
     </h1>
 
     <div class="flex flex-col md:flex-row gap-6 animate-fade-in">
       <div class="flex-1 flex flex-col">
         <div class="relative group neon-border rounded-xl overflow-hidden mb-4">
           <img
-            :src="event.posterUrl"
-            :alt="event.alt"
+            :src="eventStore.selectedEvent.posterUrl"
+            :alt="eventStore.selectedEvent.eventName"
             class="rounded-xl w-full h-[450px] object-cover hover:scale-105 transition-transform duration-500"
             @load="loaded = true"
           />
@@ -17,7 +18,7 @@
             class="absolute bottom-2 left-2 flex flex-row gap-2 transition-all duration-500"
             :class="{'translate-x-0': loaded, '-translate-x-full': !loaded}"
           >
-            <div class="bg-teal-500/90 text-xl font-bold px-2 py-1 rounded-xl text-white">{{ event.tag }}</div>
+            <div class="bg-teal-500/90 text-xl font-bold px-2 py-1 rounded-xl text-white">{{ eventStore.selectedEvent.tag }}</div>
           </div>
         </div>
 
@@ -37,7 +38,7 @@
         </div>
 
         <h2 class="mt-6 text-2xl font-semibold mb-2 gradient-text inline-block">About The Event</h2>
-        <div class="text-lg text-gray-300">{{ event.description }}</div>
+        <div class="text-lg text-gray-300">{{ eventStore.selectedEvent.description }}</div>
 
         <div class="mt-6">
           <h2 class="text-2xl font-semibold mb-2 gradient-text inline-block">Organizer Details</h2>
@@ -45,11 +46,11 @@
             <span class="block gradient-text font-semibold mb-2">Contact:</span>
             <span class="block text-md text-gray-300">
               <span class="material-icons text-teal-400 text-sm mr-1 align-middle">call</span>
-              {{ event.organizer.mobile || 'N/A' }}
+              {{ eventStore.selectedEvent.organizer.mobile || 'N/A' }}
             </span>
             <span class="block text-md text-gray-300">
               <span class="material-icons text-teal-400 text-sm mr-1 align-middle">email</span>
-              {{ event.organizer.email || 'N/A' }}
+              {{ eventStore.selectedEvent.organizer.email || 'N/A' }}
             </span>
           </p>
         </div>
@@ -58,40 +59,40 @@
       <div class="w-full md:w-[420px] h-[450px] bg-[#1b2236] neon-border rounded-xl p-6 shadow-lg space-y-4">
         <div class="flex items-center gap-2">
           <span class="material-icons text-teal-400 text-base mr-1 align-middle">calendar_today</span>
-          <span class="gradient-text">{{ event.date }}</span>
+          <span class="gradient-text">{{ eventStore.selectedEvent.date }}</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="material-icons text-teal-400 text-base mr-1 align-middle">schedule</span>
-          <span class="gradient-text">{{ event.time }}</span>
+          <span class="gradient-text">{{ eventStore.selectedEvent.time }}</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="material-icons text-teal-400 text-base mr-1 align-middle">location_city</span>
-          <span class="gradient-text">{{ event.city || 'City not specified' }}</span>
+          <span class="gradient-text">{{ eventStore.selectedEvent.city || 'City not specified' }}</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="material-icons text-teal-400 text-base mr-1 align-middle">location_on</span>
-          <span class="gradient-text">{{ event.location.address }}</span>
+          <span class="gradient-text">{{ eventStore.selectedEvent.location.address }}</span>
         </div>
         <div>
           <span class="material-icons text-teal-400 text-base mr-1 align-middle">groups</span>
-          <strong class="gradient-text">Target Audience:</strong> {{ event.targetAudience || 'All' }}
+          <strong class="gradient-text">Target Audience:</strong> {{ eventStore.selectedEvent.targetAudience || 'All' }}
         </div>
         <div>
           <span class="material-icons text-teal-400 text-base mr-1 align-middle">event_seat</span>
-          <strong class="gradient-text">Capacity:</strong> {{ event.capacity || 'No Limit' }}
+          <strong class="gradient-text">Capacity:</strong> {{ eventStore.selectedEvent.capacity || 'No Limit' }}
         </div>
         <div>
           <span class="material-icons text-teal-400 text-base mr-1">backpack</span>
-          <strong class="gradient-text">Essentials:</strong> {{ event.essentialsToCarry || 'None' }}
+          <strong class="gradient-text">Essentials:</strong> {{ eventStore.selectedEvent.essentialsToCarry || 'None' }}
         </div>
-        <div v-if="event.price">
+        <div v-if="eventStore.selectedEvent.registrationFee">
           <span class="material-icons text-teal-400 text-base mr-1 align-middle">request_quote</span>
-          <strong class="gradient-text">Fee:</strong> {{ event.registrationFee }}
+          <strong class="gradient-text">Fee:</strong> {{ eventStore.selectedEvent.registrationFee }}
         </div>
 
-        <div v-if="event.registrationLink" class="flex justify-center">
+        <div v-if="eventStore.selectedEvent.registrationLink" class="flex justify-center">
           <a
-            :href="event.registrationLink"
+            :href="eventStore.selectedEvent.registrationLink"
             target="_blank"
             class="inline-block neon-border gradient-text text-black font-bold py-2 px-6 rounded-xl hover:bg-teal-400 hover:text-black transition pulse-animation mb-2"
           >
@@ -101,24 +102,40 @@
       </div>
     </div>
   </div>
-  <div v-else class="text-center text-white mt-10 animate-pulse">
-  Fetching event info...
-</div>
+  <div v-else class="text-teal-400 animate-pulse">
+      Loading event details...
+    </div>
+  </transition>
 </template>
 <script setup>
-import { ref,onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import {api} from '../services/api'
-console.log('EventDetails component loaded')
+import { useEventStore } from '@/stores/event'
 
 const route = useRoute()
-const eventId = route.params.id
-console.log(eventId)
-const event = ref(null)
+const eventStore = useEventStore()
+
+const loading = ref(true)
+
+const fetchEvent = async (id) => {
+  loading.value = true
+  await eventStore.fetchEventById(id)
+  loading.value = false
+}
+
+onMounted(() => {
+  fetchEvent(route.params.id)
+})
+
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) fetchEvent(newId)
+  }
+)
 
 const interestedCount = ref(0)
 const userInterested = ref(false)
-const loaded = ref(false)
 
 const handleInterested = () => {
   if (!userInterested.value) {
@@ -129,17 +146,8 @@ const handleInterested = () => {
     userInterested.value = false
   }
 }
-onMounted(async () => {
-  try {
-    const res = await api.get(`/events/${eventId}`)
-    console.log('Event fetched:', res.data)
-    event.value = res.data
-  } catch (err) {
-    console.error('Failed to fetch event:', err)
-  }
-})
-
 </script>
+
 
 <style scoped>
 .pulse-animation {
@@ -172,5 +180,13 @@ onMounted(async () => {
 }
 .gradient-text {
   @apply text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

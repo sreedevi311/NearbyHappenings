@@ -1,4 +1,5 @@
 <template>
+  <router-link :to="`/event/${event._id}`">
   <div
     @mouseenter="hovered = true"
     @mouseleave="hovered = false"
@@ -47,6 +48,7 @@
       </p>
     </div>
   </div>
+</router-link>
 </template>
 
 <script setup>

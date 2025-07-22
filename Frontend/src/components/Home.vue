@@ -207,6 +207,8 @@ import LocationSelector from './LocationSelector.vue'
 import InterestSelector from './InterestSelector.vue'
 import { useAuthStore } from '@/stores/auth'
 const authStore = useAuthStore()
+import { useEventStore } from '@/stores/event'
+const eventStore = useEventStore()
 
 const selectedCity = ref('')
 const selectedThemes = ref([])
@@ -249,35 +251,9 @@ function selectType(type) {
   searchQuery.value = type
 }
 
-const upcomingEvents=ref([])
+const upcomingEvents= computed(() => eventStore.upcomingEvents)
 
-const fetchUpcomingEvents= async()=>{
-  if (!authStore.user?._id) return
-  const userId = authStore.user._id
-
-  const { data } = await api.get(`/events/user-city-upcoming-day-events/${userId}`);
-  upcomingEvents.value = data;
-}
-
-const groupedEvents = ref({})
-
-const fetchGroupedEvents = async () => {
-  if (!authStore.user?._id) return
-  const userId = authStore.user._id
-
-  const { data } = await api.get(`/events/user-interested-events/${userId}`)
-  console.log('Fetched events:', data)
-
-  groupedEvents.value = data.reduce((acc, event) => {
-    const themeKey = event.theme?.name || event.theme
-    if (!acc[themeKey]) acc[themeKey] = []
-    acc[themeKey].push(event)
-    return acc
-  }, {})
-
-  console.log('Grouped Events (raw):', JSON.parse(JSON.stringify(groupedEvents.value)))
-}
-
+const groupedEvents = computed(() => eventStore.groupedEvents)
 
 const showPanel = ref(false)
 const activeComponent = ref(null)
@@ -315,7 +291,9 @@ function handleLoginSuccess(user) {
   }
 }
 
-function handleSignOut() {
+async function handleSignOut() {
+  await authStore.logout()
+  console.log('logged out!')
   isSignedIn.value = false
   closePanel()
 }
@@ -342,13 +320,12 @@ watch(
   () => authStore.user?._id,
   (id) => {
     if (id) {
-      fetchGroupedEvents()
-      fetchUpcomingEvents()
+      eventStore.fetchGroupedEvents(id)
+      //eventStore.fetchUpcomingEvents(id)
     }
   },
   { immediate: true }
 )
-
 </script>
 
 <style scoped>
