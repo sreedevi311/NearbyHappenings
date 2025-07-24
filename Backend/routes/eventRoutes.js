@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getEventsByTheme,saveFormEvent,pendingRequests,updateStatusById,adminAdded ,deleteById,adminReAdd,getEventById,adminUpdatedEventInfo,getEventThemes ,getAllCities,userInterestedEvents, userCityUpcomingDayEvents} = require('../controllers/eventControllers');
+const { getEventsByTheme,saveFormEvent,pendingRequests,updateStatusById,adminAdded ,deleteById,adminReAdd,getEventById,adminUpdatedEventInfo,getEventThemes ,getAllCities,userInterestedEvents, userCityUpcomingDayEvents,upcomingDayEvents,getRandomThemeEvents} = require('../controllers/eventControllers');
 
 router.get('/theme/:theme', getEventsByTheme);
 router.post('/save-form-event',saveFormEvent);
@@ -14,6 +14,9 @@ router.get('/get-event-themes',getEventThemes);
 router.get('/get-all-cities',getAllCities);
 router.get('/user-interested-events/:userId',userInterestedEvents);
 router.get('/user-city-upcoming-day-events/:userId',userCityUpcomingDayEvents);
+router.get('/upcoming-day-events',upcomingDayEvents);
+router.get('/random-theme-events', getRandomThemeEvents);
+
 
 router.get('/:id', getEventById)
 module.exports = router;

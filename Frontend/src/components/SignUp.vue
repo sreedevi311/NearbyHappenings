@@ -119,7 +119,7 @@ const submitForm = async () => {
 
       // ✅ Emit login success + close modal
       emit('close')
-      emit('loginSuccess', authStore.user)
+      emit('signupSuccess', authStore.user)
 
     } catch (error) {
       console.error("❌ Signup failed:", error.response?.data || error.message)

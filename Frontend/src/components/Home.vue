@@ -103,20 +103,31 @@
         </div>
 
         <div v-if="Object.keys(groupedEvents).length" class="space-y-10 px-4 py-6">
-    <div v-for="(events, theme) in groupedEvents" :key="theme">
-      <h2 class="text-2xl font-bold text-teal-400 mb-4">{{ theme }} Events</h2>
+          <div v-for="(events, theme) in groupedEvents" :key="theme">
+            <h2 class="text-2xl font-bold text-teal-400 mb-4">{{ theme }} Events</h2>
 
-      <div class="flex gap-6 overflow-x-auto hide-scrollbar pb-4">
-        <EventCard
-          v-for="event in events"
-          :key="event._id"
-          :event="event"
-          class="min-w-[300px] mt-4"
-        />
-      </div>
-    </div>
-  </div>
+            <div class="flex gap-6 overflow-x-auto hide-scrollbar pb-4">
+              <EventCard
+                v-for="event in events"
+                :key="event._id"
+                :event="event"
+                class="min-w-[300px] mt-4"
+              />
+             </div>
+           </div>
+        </div>
 
+        <div v-if="Object.keys(groupedEvents).length===1" class="flex items-center justify-center h-24">
+          <button 
+            @click="$router.push({ path: `/events` })"
+            class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-full font-medium flex items-center gap-1 transition-all"
+            >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Explore More Theme Events
+          </button>
+        </div>
       </main>
     </div>
 
@@ -174,7 +185,7 @@
   :is="activeComponent"
   @switchPanel="handleSwitch"
   @loginSuccess="handleLoginSuccess"
-  @signupSuccess="handleLoginSuccess"
+  @signupSuccess="handleSignupSuccess"
   @signOut="handleSignOut"
 />
 
@@ -196,7 +207,7 @@
 
 
 <script setup>
-import { ref,computed,watch } from 'vue'
+import { ref,computed,watch, onMounted } from 'vue'
 import {api} from '../services/api'
 import EventCard from './EventCard.vue'
 import carousel from './carousel.vue'
@@ -225,8 +236,6 @@ const navItems = ref([
   { name: 'Community', icon: 'groups', route: '/admin-panel' },
   { name: 'Host', icon: 'description', route: '/host-event' },
 ])
-
-const  isSignedIn= ref(false) // toggle this for demo
 
 const searchQuery = ref('')
 const eventTypes = [
@@ -282,10 +291,31 @@ function handleSwitch(type) {
   }
   showPanel.value=true
 }
-function handleLoginSuccess(user) {
-  isSignedIn.value = true
+async function handleLoginSuccess() {
+  const user = authStore.user  // ✅ safer & ensures latest user data
+  if (!user || !user._id) {
+    console.error("❌ User data missing after login")
+    return
+  }
+
+  try {
+    console.log("🔄 Fetching events for user:", user._id)
+    await eventStore.fetchGroupedEvents(user._id)
+    await eventStore.fetchUpcomingEvents(user._id)
+    console.log("✅ Events fetched successfully")
+  } catch (err) {
+    console.error("❌ Failed to fetch events after login:", err)
+  }
+
   closePanel()
-  console.log('User logged in:', user.email) 
+  console.log('🎉 User logged in:', user.email)
+}
+
+
+function handleSignupSuccess(user) {
+
+  closePanel()
+  console.log('User signed up:', user.email) 
   if (!authStore.user?.location || !authStore.user?.interests?.length) {
     showLocationModal.value = true
   }
@@ -294,9 +324,10 @@ function handleLoginSuccess(user) {
 async function handleSignOut() {
   await authStore.logout()
   console.log('logged out!')
-  isSignedIn.value = false
+  selectedCity.value='Select Location'
   closePanel()
 }
+
 function handleLocationSelect(city) {
   selectedCity.value = city
   showLocationModal.value = false
@@ -304,28 +335,77 @@ function handleLocationSelect(city) {
 }
 
 async function handleThemeSelection(themes) {
+  console.log('📌 handleThemeSelection called with themes:', themes)
+
   selectedThemes.value = themes
   showInterestModal.value = false
 
-  // Now save to DB via Pinia store
   try {
-    await authStore.updatePreferences(selectedCity.value, selectedThemes.value)
-    console.log('Preferences saved!')
+    const themeIds = selectedThemes.value.map(t => t._id)
+    const city = selectedCity.value
+
+    console.log('📤 Calling authStore.updatePreferences with:', city, themeIds)
+
+    await authStore.updatePreferences(city, themeIds)
+
+    // 💡 Re-fetch events immediately after updating preferences
+    const userId = authStore.user?._id
+    if (userId) {
+      await eventStore.fetchGroupedEvents(userId)
+      await eventStore.fetchUpcomingEvents(userId)
+      console.log('✅ Events fetched after updating preferences')
+    } else {
+      console.warn('⚠️ User ID missing after preferences update')
+    }
+
   } catch (err) {
-    console.error('Failed to save preferences:', err)
+    console.error('❌ Failed to save preferences in handleThemeSelection:', err)
   }
 }
 
 watch(
-  () => authStore.user?._id,
-  (id) => {
-    if (id) {
-      eventStore.fetchGroupedEvents(id)
-      eventStore.fetchUpcomingEvents(id)
+  () => authStore.user,
+  async (user) => {
+    if (user && user._id) {
+      // Logged-in user – fetch personalized data
+      await eventStore.fetchGroupedEvents(user._id)
+      await eventStore.fetchUpcomingEvents(user._id)
+      if (user?.city) {
+        selectedCity.value = user.city
+        console.log('🌆 selectedCity updated from user:', selectedCity.value)
+      }
+    } else {
+      // Guest or no user – fetch default events
+      try {
+        const response = await api.get('/events/upcoming-day-events')
+        eventStore.upcomingEvents = response.data
+      } catch (error) {
+        console.error("❌ Failed to fetch default events:", error)
+      }
+
+      try {
+        const { data } = await api.get('/events/random-theme-events')
+        eventStore.groupedEvents = {
+          [data.theme]: data.events
+        }
+      } catch (err) {
+        console.error('❌ Failed to fetch random theme events:', err)
+      }
     }
   },
   { immediate: true }
 )
+
+
+onMounted(async () => {
+  await authStore.fetchProfile()
+
+  // Only set selectedCity if user is logged in
+  if (authStore.user?.city) {
+    selectedCity.value = authStore.user.city
+  }
+})
+
 </script>
 
 <style scoped>

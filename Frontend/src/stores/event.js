@@ -10,6 +10,7 @@ export const useEventStore = defineStore('event', {
   }),
   actions: {
     async fetchGroupedEvents(userId) {
+      
       const { data } = await api.get(`/events/user-interested-events/${userId}`)
       this.groupedEvents = data.reduce((acc, event) => {
         const themeKey = event.theme?.name || event.theme
@@ -21,6 +22,7 @@ export const useEventStore = defineStore('event', {
     async fetchUpcomingEvents(userId) {
       const { data } = await api.get(`/events/user-city-upcoming-day-events/${userId}`)
       this.upcomingEvents = data
+      console.log(this.upcomingEvents)
     },
     async fetchEventById(id) {
       try {

@@ -96,10 +96,6 @@ const currentEvent = computed(() => {
   return props.events[currentIndex.value]
 })
 
-watch(() => props.events, () => {
-  currentIndex.value = 0
-})
-
 const next = () => {
   if (props.events.length === 0) return
   currentIndex.value = (currentIndex.value + 1) % props.events.length
@@ -115,17 +111,41 @@ const goToSlide = (index) => {
   currentIndex.value = index
 }
 
-const pauseAutoScroll = () => clearInterval(autoScrollInterval)
+const pauseAutoScroll = () => {
+  if (autoScrollInterval) {
+    clearInterval(autoScrollInterval)
+    autoScrollInterval = null
+  }
+}
 
 const resumeAutoScroll = () => {
   pauseAutoScroll()
   if (props.events.length > 1) {
     autoScrollInterval = setInterval(next, 3000)
+    console.log('▶️ Auto-scroll started')
   }
 }
 
-onMounted(resumeAutoScroll)
-onBeforeUnmount(pauseAutoScroll)
+watch(
+  () => props.events,
+  (newEvents) => {
+    if (newEvents && newEvents.length > 1) {
+      console.log('📦 Events updated, starting auto-scroll')
+      currentIndex.value = 0
+      resumeAutoScroll()
+    }
+  },
+  { immediate: true }
+)
+
+onMounted(() => {
+  console.log('🎬 Carousel mounted. Initial events:', props.events.length)
+})
+
+onBeforeUnmount(() => {
+  pauseAutoScroll()
+  console.log('🛑 Carousel unmounted. Auto-scroll stopped')
+})
 </script>
 
 <style>

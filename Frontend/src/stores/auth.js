@@ -9,12 +9,26 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   actions: {
+    setUser(user) {
+      this.user = user
+    },
+      async fetchProfile() {
+      try {
+        const res = await api.get('/auth/profile', { withCredentials: true })
+        this.user = res.data.user
+        console.log('🔁 User rehydrated from cookie:', this.user)
+      } catch (err) {
+        console.warn('⚠️ Could not fetch profile on app load:', err)
+        this.user = null
+      }
+    }
+    ,
     async login(email, password) {
       try {
         const res = await api.post('/auth/login', { email, password })
         this.accessToken = res.data.accessToken
         this.refreshToken = res.data.refreshToken
-        this.user = { email } // you can fetch profile later
+        this.user = res.data.user
       } catch (err) {
         console.error('Login failed:', err)
         throw err
@@ -25,7 +39,10 @@ export const useAuthStore = defineStore('auth', {
         const res = await api.post('/auth/signup', { email, password })
         this.accessToken = res.data.accessToken
         this.refreshToken = res.data.refreshToken
-        this.user = { email } // You can later replace this with actual user data
+        this.user = res.data.user
+        console.log("signup success in Auth.js")
+        console.log(this.refreshToken)
+        console.log(this.accessToken) // You can later replace this with actual user data
     } catch (err) {
         console.error('Signup failed:', err)
         throw err
@@ -57,25 +74,36 @@ export const useAuthStore = defineStore('auth', {
         this.logout()
       }
     },
-        async updatePreferences(city, interests) {
+    async updatePreferences(city, interests) {
+      console.log('⚙️ updatePreferences called')
+      console.log('🧾 Access token being used:', this.accessToken)
+      console.log('📍 City:', city)
+      console.log('🏷️ Interests:', interests)
+
       try {
-        const res = await api.put('/auth/update-preferences', {
-          city,
-          interests
-        }, {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          }
+        const payload = {}
+        if (city) payload.city = city
+        if (interests) payload.interests = interests
+
+        console.log('📦 Payload to send:', payload)
+
+        const res = await api.put('/auth/update-preferences', payload, {
+          withCredentials: true
         })
 
+        console.log('📬 Response from server:', res)
+
         if (res.data.success) {
-          this.user = res.data.user // update user data in store
+          // Instead of directly assigning user, re-fetch full profile
+          await this.fetchProfile()
+          console.log('✅ User preferences updated and rehydrated:', this.user)
         } else {
-          console.error('Update failed:', res.data.error)
+          console.error('⚠️ Update failed with server message:', res.data.error)
         }
       } catch (err) {
-        console.error('Failed to update preferences:', err)
+        console.error('❌ Failed to update preferences (axios/network error):', err)
       }
-    },
-  },
+    }
+
+},
 })

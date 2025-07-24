@@ -204,6 +204,53 @@ const userCityUpcomingDayEvents = async (req, res) => {
   }
 };
 
+const upcomingDayEvents = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Ensure time is set to start of the day
 
+    const events = await Event.find({
+      date: { $gte: today.toISOString().slice(0, 10) },
+    })
+      .sort({ date: 1 })     // Sort by soonest first
+      .limit(10);            // Limit to 10 events
+    return res.status(200).json(events);
+  } catch (err) {
+    console.error("❌ Error fetching events:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 
-module.exports = { getEventsByTheme,saveFormEvent,pendingRequests,updateStatusById,adminAdded,deleteById,adminReAdd,getEventById ,adminUpdatedEventInfo,getEventThemes,getAllCities,userInterestedEvents,userCityUpcomingDayEvents};
+// GET /events/random-theme-events
+const getRandomThemeEvents = async (req, res) => {
+  try {
+    // 1. Get total theme count
+    const count = await Theme.countDocuments();
+    if (count === 0) return res.status(404).json({ error: "No themes available" });
+
+    // 2. Pick a random index
+    const random = Math.floor(Math.random() * count);
+
+    // 3. Get one random theme
+    const randomThemeDoc = await Theme.findOne().skip(random);
+    const randomTheme = randomThemeDoc.name; // adjust field name if needed
+
+    // 4. Get upcoming events for that theme
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const events = await Event.find({
+      theme: randomTheme,
+      date: { $gte: today },
+    })
+      .sort({ date: 1 })
+      .limit(10);
+
+    res.status(200).json({ theme: randomTheme, events });
+  } catch (err) {
+    console.error("❌ Error fetching random theme events:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+module.exports = { getEventsByTheme,saveFormEvent,pendingRequests,updateStatusById,adminAdded,deleteById,adminReAdd,getEventById ,adminUpdatedEventInfo,getEventThemes,getAllCities,userInterestedEvents,userCityUpcomingDayEvents,upcomingDayEvents,getRandomThemeEvents};
