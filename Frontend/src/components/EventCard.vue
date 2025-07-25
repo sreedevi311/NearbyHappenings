@@ -44,7 +44,7 @@
       </p>
       <p class="flex items-center text-sm">
         <span class="material-icons text-teal-400 text-base mr-1">location_on</span>
-        {{ event.location.address }}
+        {{ event.city }}
       </p>
     </div>
   </div>

@@ -1,5 +1,5 @@
 <template class="bg-black">
-    <div class="container mx-auto px-4 py-12 bg-black">
+    <div class="container mx-auto px-4 py-6">
         <!-- Header with animated glow-->
         <header class="text-center mb-16 relative">
             <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400">

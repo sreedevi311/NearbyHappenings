@@ -17,7 +17,7 @@
       <div class="flex gap-3">
         <button
           v-if="type === 'added'"
-          @click="$emit('delete', task)"
+          @click.stop="$emit('delete', task)"
           class="border border-red-500 text-red-400 rounded-full px-4 py-1.5 text-sm font-medium transition-all
                  hover:bg-red-600/20 hover:border-red-500 hover:text-red-400"
         >
@@ -25,7 +25,7 @@
         </button>
         <button
           v-if="type === 'deleted'"
-          @click="$emit('add', task)"
+          @click.stop="$emit('add', task)"
           class="border border-teal-500 text-teal-400 rounded-full px-4 py-1.5 text-sm font-medium transition-all
                  hover:bg-teal-600/20 hover:border-teal-500 hover:text-teal-400"
         >

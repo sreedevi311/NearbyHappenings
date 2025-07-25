@@ -1,62 +1,68 @@
 <template>
-  <section class="mb-16 relative">
-    <h2 class="text-xl font-bold mb-6 ml-32 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-300">
-      Upcoming Events
-    </h2>
+  <section class="mb-12 relative mt-2">
 
-    <div class="relative w-[900px] mx-auto overflow-visible">
+    <div class="relative w-[1000px] mx-auto overflow-visible">
       <!-- Carousel Track -->
-      <div class="flex transition-transform duration-500 ease-in-out"
-           :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
+      <div
+        class="flex transition-transform duration-500 ease-in-out"
+        :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
+      >
         <div
           v-for="(event, index) in events"
           :key="event._id"
-          class="w-[900px] flex-shrink-0 px-4 relative"
+          class="flex-shrink-0 relative"
+          style="width: 1000px"
         >
-          <div
-            class="relative h-[420px] w-[850px] overflow-hidden rounded-xl border border-teal-400/20 bg-gray-900/20 shadow-xl"
-          >
-            <img
-              :src="event.posterUrl"
-              :alt="event.eventName"
-              class="w-full h-full object-cover rounded-xl"
-            />
+          <router-link :to="`/event/${event._id}`">
+            <div
+              class="relative h-[297px] w-[900px] mx-auto overflow-hidden rounded-xl border border-teal-400/20 bg-gray-900/20 shadow-xl"
+            >
+              <img
+                :src="event.posterUrl"
+                :alt="event.eventName"
+                class="w-full h-full object-cover rounded-xl"
+              />
 
-            <!-- Event Info -->
-            <div class="absolute bottom-0 left-0 right-0 px-6 pt-12 pb-6 h-40 bg-gradient-to-t from-black/90 to-transparent z-10">
-              <h3 class="text-2xl font-bold text-white mb-2">{{ event.eventName }}</h3>
-              <div class="flex flex-wrap items-center text-teal-300 gap-x-4 gap-y-2">
-                <div class="flex items-center">
-                  <span class="material-icons mr-1 text-teal-400">event</span>
-                  <span>{{ dayjs(event.date).format('MMMM D, YYYY') }}</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="material-icons mr-1 text-teal-400">schedule</span>
-                  <span>{{ event.time }}</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="material-icons mr-1 text-teal-400">location_on</span>
-                  <span>{{ event.location.address }}</span>
+              <!-- Event Info -->
+              <div
+                class="absolute bottom-0 left-0 right-0 px-6 pt-12 h-36 bg-gradient-to-t from-black/90 to-transparent z-10"
+              >
+                <h3 class="text-xl font-bold text-white mb-2">{{ event.eventName }}</h3>
+                <div class="flex flex-wrap items-center text-teal-300 gap-x-4 gap-y-2 text-md">
+                  <div class="flex items-center">
+                    <span class="material-icons mr-1 text-sm">event</span>
+                    <span>{{ dayjs(event.date).format('MMMM D, YYYY') }}</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="material-icons mr-1 text-sm">schedule</span>
+                    <span>{{ event.time }}</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="material-icons mr-1 text-sm">location_on</span>
+                    <span>{{ event.location.address }}</span>
+                  </div>
                 </div>
               </div>
             </div>
-
-            <!-- Arrows -->
-            <button
-              @click.stop="prev"
-              class="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-gray-900/70 hover:bg-teal-500 text-white p-2 rounded-full shadow-lg"
-            >
-              <span class="material-icons">chevron_left</span>
-            </button>
-            <button
-              @click.stop="next"
-              class="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-gray-900/70 hover:bg-teal-500 text-white p-2 rounded-full shadow-lg"
-            >
-              <span class="material-icons">chevron_right</span>
-            </button>
-          </div>
+          </router-link>
         </div>
       </div>
+
+      <!-- Arrows (only once, outside the loop) -->
+      <!-- Arrows aligned to container edges -->
+      <button
+        @click.stop="prev"
+        class="absolute left-[-150px] top-1/2 -translate-y-1/2 z-20 bg-gray-900/80 hover:bg-teal-500 text-white p-2 rounded-full shadow-xl"
+      >
+        <span class="material-icons">chevron_left</span>
+      </button>
+      <button
+        @click.stop="next"
+        class="absolute right-[-150px] top-1/2 -translate-y-1/2 z-20 bg-gray-900/80 hover:bg-teal-500 text-white p-2 rounded-full shadow-xl"
+      >
+        <span class="material-icons">chevron_right</span>
+      </button>
+
 
       <!-- Dots -->
       <div class="mt-6 flex justify-center space-x-2">
@@ -74,6 +80,7 @@
     </div>
   </section>
 </template>
+
 
 
 

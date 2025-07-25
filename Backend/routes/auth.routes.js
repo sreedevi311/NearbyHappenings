@@ -7,7 +7,7 @@ router.get('/profile',authMiddleware,authController.profile)
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 router.post("/refresh", authController.refreshToken);
-router.post("/logout", authController.logout);
+router.post("/logout", authMiddleware,authController.logout);
 router.put('/update-preferences', authMiddleware,authController.updateUserPreferences);
 
 module.exports = router;

@@ -20,13 +20,13 @@
             </div>
           </div>
           <div class="p-4 space-y-1">
-            <p class="flex items-center text-sm">
+            <p class="flex items-center text-sm mb-4">
               <span class="material-icons text-teal-400 text-base mr-1">calendar_today</span>
-              {{ event.date }} &nbsp;|&nbsp;
+              {{ dayjs(event.date).format('MMMM D, YYYY') }} &nbsp;|&nbsp;
               <span class="material-icons text-teal-400 text-base mr-1">schedule</span>
               {{ event.time }}
             </p>
-            <p class="flex items-center text-sm">
+            <p v-if="event.distance" class="flex items-center text-sm">
               <span class="material-icons text-teal-400 text-base mr-1">near_me</span>
               {{ event.distance }}
             </p>
@@ -49,6 +49,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../services/api'
+import dayjs from 'dayjs'
 
 const route = useRoute()
 const router = useRouter()

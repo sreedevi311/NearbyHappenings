@@ -24,7 +24,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
-
+  nearbyCities: [String],
+  
   interests: {
     type: [String], // e.g., ["Yoga", "Music", "Gardening"]
     default: [],

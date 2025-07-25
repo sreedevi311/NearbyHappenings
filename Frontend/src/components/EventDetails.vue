@@ -102,9 +102,6 @@
       </div>
     </div>
   </div>
-  <div v-else class="text-teal-400 animate-pulse">
-      Loading event details...
-    </div>
   </transition>
 </template>
 <script setup>

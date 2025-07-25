@@ -7,6 +7,8 @@ import EventDetails from '../components/EventDetails.vue'
 import AdminPanel from '../components/AdminPanel.vue'
 import Requests from '../components/Requests.vue'
 import AddEvent from '../components/AddEvent.vue'
+import Communities from '@/components/communities.vue'
+import CommunityView from '@/components/communityView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,6 +39,15 @@ const router = createRouter({
       path: '/event/:id', // ✅ Corrected path
       name: 'event-details',
       component: EventDetails,
+    },
+    {
+      path:'/communities',
+      component:Communities,
+    },
+    {
+      path: '/communities/:id',
+      name: 'community-view',
+      component: CommunityView
     },
     // Admin Panel with nested children
     {

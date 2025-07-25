@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/user.model");
+const City = require('../models/city.model');
 const jwt = require("jsonwebtoken");
 const { generateAccessToken, generateRefreshToken } = require("../utils/token");
 
@@ -22,7 +23,7 @@ function setAuthCookies(res, accessToken, refreshToken) {
 
 const profile = async (req, res) => {
   try {
-    const userId = req.user.userId; // set by JWT auth middleware
+    const userId = req.user.userId; 
     const user = await User.findById(userId).select('-password -refreshToken'); // exclude sensitive fields
 
     if (!user) {
@@ -139,25 +140,67 @@ const refreshToken = async (req, res) => {
   }
 };
 
+
 const updateUserPreferences = async (req, res) => {
   const { city, interests } = req.body;
-  const userId = req.user.userId; // set by auth middleware
+  const userId = req.user.userId;
 
   try {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
-    if (city) user.city = city;
+    if (city) {
+      user.city = city;
+
+      // Find coordinates of the selected city
+      const baseCity = await City.findOne({ name: city });
+      if (!baseCity || !baseCity.location || !baseCity.location.coordinates) {
+        return res.status(400).json({ success: false, error: 'City not found or missing coordinates' });
+      }
+
+      const [lng, lat] = baseCity.location.coordinates;
+
+      // Find nearby cities within 50 km (distance in meters)
+      const nearbyCities = await City.aggregate([
+        {
+          $geoNear: {
+            near: { type: 'Point', coordinates: [lng, lat] },
+            distanceField: 'distance',
+            maxDistance: 30000, // 30 km
+            spherical: true
+          }
+        },
+        {
+          $match: { name: { $ne: city } } // exclude base city itself
+        },
+        {
+          $project: { _id: 0, name: 1 }
+        }
+      ]);
+
+      // Extract just the names
+      user.nearbyCities = nearbyCities.map(c => c.name);
+    }
+
     if (interests) user.interests = interests;
 
     await user.save();
 
-    res.json({ success: true, user: { email: user.email, city: user.city, interests: user.interests } });
+    res.json({
+      success: true,
+      user: {
+        email: user.email,
+        city: user.city,
+        interests: user.interests,
+        nearbyCities: user.nearbyCities
+      }
+    });
   } catch (err) {
     console.error("❌ Failed to update preferences:", err);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 };
+
 
 module.exports = {
   profile,

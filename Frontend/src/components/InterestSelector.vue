@@ -12,21 +12,20 @@
       <p class="text-center mb-4 text-teal-400">Choose one or more themes you’re interested in:</p>
 
       <!-- Theme Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
-        <button
-          v-for="theme in themes"
-          :key="theme._id"
-          @click="toggleTheme(theme)"
-          :class="[
-            'rounded px-4 py-2 border transition-all',
-            selected.includes(theme)
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <div v-for="theme in themes" :key="theme._id" class="h-full">
+          <button
+            @click="toggleTheme(theme)"
+            class="w-full h-full rounded px-4 py-2 border transition-all min-h-[60px]"
+            :class="selected.includes(theme)
               ? 'bg-teal-500 text-white border-teal-600'
-              : 'bg-white text-black border-gray-300 hover:bg-teal-600 hover:text-white'
-          ]"
-        >
-          {{ theme.name }}
-        </button>
+              : 'bg-white text-black border-gray-300 hover:bg-teal-600 hover:text-white'"
+          >
+            {{ theme.name }}
+          </button>
+        </div>
       </div>
+
 
       <!-- Continue Button -->
       <button

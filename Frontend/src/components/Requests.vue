@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-black text-green-400 font-sans ml-24 p-4 pt-1">
+  <div class="text-green-400 font-sans ml-24 p-4 pt-1">
     <!-- Section Headings (Tabs) -->
     <div class="flex justify-center space-x-8 mb-4 text-xl font-bold tracking-wide">
       <h2
@@ -37,7 +37,7 @@
     <!-- Fixed Pagination -->
 <div
   v-if="currentTab !== 'Add'"
-  class="fixed bottom-0 left-24 w-full bg-black/90 backdrop-blur-sm border-t border-gray-800 py-3 flex justify-center items-center space-x-6 z-50"
+  class="fixed bottom-0 left-24 w-full bg-[#1b1a1f] backdrop-blur-sm border-t border-gray-800 py-3 flex justify-center items-center space-x-6 z-50"
 >
   <button
     @click="prevPage"

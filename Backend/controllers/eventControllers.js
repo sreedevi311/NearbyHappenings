@@ -8,22 +8,32 @@ const User=require('../models/user.model')
 // Get events by theme
 const getEventsByTheme = async (req, res) => {
   try {
-    const rawTheme = req.params.theme; // e.g., 'yoga wellness' or 'yoga-wellness'
-    
-    // Normalize: replace hyphens with space, insert optional & or ignore it
-    const cleaned = rawTheme.replace(/-/g, ' ').toLowerCase();
+    const rawTheme = req.params.theme;
+    const userId = req.user?.userId;
 
-    // Build a regex that ignores special characters like '&'
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: no user info' });
+    }
+
+    // Fetch user to get their city
+    const user = await User.findById(userId);
+    if (!user || !user.city) {
+      return res.status(400).json({ message: 'User city not found' });
+    }
+
+    const cleaned = rawTheme.replace(/-/g, ' ').toLowerCase();
     const regex = new RegExp(cleaned.replace(/\s/g, '.*'), 'i');
 
     console.log("🔍 Normalized theme regex:", regex);
+    console.log("📍 Filtering for city:", user.city);
 
     const events = await Event.find({
-      theme: { $regex: regex }
+      theme: { $regex: regex },
+      city: user.city
     }).sort({ date: 1 });
 
     if (!events.length) {
-      return res.status(404).json({ message: `No events found for theme: ${rawTheme}` });
+      return res.status(404).json({ message: `No events found for theme "${rawTheme}" in your city` });
     }
 
     res.status(200).json(events);
@@ -32,6 +42,7 @@ const getEventsByTheme = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 const saveFormEvent=async (req,res)=>{
   try {

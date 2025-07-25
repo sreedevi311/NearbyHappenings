@@ -16,7 +16,7 @@
       />
 
       <!-- Popular Cities -->
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="grid  md:grid-cols-4 gap-4">
         <div
           v-for="city in filteredCities"
           :key="city._id"
