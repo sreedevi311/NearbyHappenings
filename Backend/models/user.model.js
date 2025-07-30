@@ -26,11 +26,12 @@ const userSchema = new mongoose.Schema({
   },
   nearbyCities: [String],
   
-  interests: {
-    type: [String], // e.g., ["Yoga", "Music", "Gardening"]
-    default: [],
-  },
+  interests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Theme' }],
 
+  communities: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Community' }
+  ],
+  
   isOrganizer: {
     type: Boolean,
     default: false,
@@ -42,8 +43,6 @@ const userSchema = new mongoose.Schema({
       ref: 'Event',
     }
   ],
-
-  interests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Theme' }],
 
   refreshToken: {
     type: String,

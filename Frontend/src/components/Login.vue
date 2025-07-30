@@ -102,7 +102,11 @@ const submitForm = async () => {
       emit('close')
     emit('loginSuccess', authStore.user)
       // ✅ Redirect after successful login
-      router.push('/')
+      if (authStore.user.role === 'admin') {
+        router.push('/admin-panel');
+      } else {
+        router.push('/'); // or wherever normal users should go
+      }
 
     } catch (error) {
       console.error("❌ Login failed:", error.response?.data || error.message)

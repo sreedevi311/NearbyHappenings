@@ -53,8 +53,8 @@ const login = async (req, res) => {
     return res.status(401).json({ message: "Invalid credentials" });
   }
 
-  const accessToken = generateAccessToken(user._id);
-  const refreshToken = generateRefreshToken(user._id);
+  const accessToken = generateAccessToken(user._id,user.role);
+  const refreshToken = generateRefreshToken(user._id,user.role);
 
   user.refreshToken = refreshToken;
   await user.save();
@@ -65,9 +65,11 @@ const login = async (req, res) => {
   success: true,
   user: {
     _id: user._id,
+    role:user.role,
     email: user.email,
     city: user.city,
-    interests: user.interests
+    interests: user.interests,
+    nearbyCities: user.nearbyCities,
   }
 });
 
@@ -80,8 +82,8 @@ const signup = async (req, res) => {
   if (existing) return res.status(409).json({ message: "Email already exists" });
 
   const newUser = new User({ email, password }); // plain password here
-  const accessToken = generateAccessToken(newUser._id);
-  const refreshToken = generateRefreshToken(newUser._id);
+  const accessToken = generateAccessToken(newUser._id,newUser.role);
+  const refreshToken = generateRefreshToken(newUser._id,newUser.role);
 
   newUser.refreshToken = refreshToken;
   await newUser.save();
@@ -92,9 +94,11 @@ const signup = async (req, res) => {
   success: true,
   user: {
     _id: newUser._id,
+    role:newUser.role,
     email: newUser.email,
     city: newUser.city,
-    interests: newUser.interests
+    interests: newUser.interests,
+    nearbyCities: newUser.nearbyCities,
   }
 });
 

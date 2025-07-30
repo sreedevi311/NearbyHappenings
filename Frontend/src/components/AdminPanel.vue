@@ -1,18 +1,18 @@
 <template>
     <div class="flex flex-1">
       <!-- Sidebar -->
-  <aside class="fixed top-15 left-0 h-screen w-24 bg-gray-900 text-white flex flex-col justify-between items-center py-8 z-20">
+  <aside class="fixed top-15 left-0 h-screen w-28 bg-gray-900 text-white flex flex-col justify-between items-center py-8 z-20">
     <nav class="p-2 flex flex-col items-center">
       <ul class="space-y-10 w-full">
         <li><img
           src="../nearbyHappeningsLogo.png"
           alt=""
-          class="h-12 object-contain"
+          class="h-7 object-cover pl-1"
         /></li>
         <li
           v-for="item in navItems"
           :key="item.name"
-          class="w-full rounded-xl transition-colors"
+          class="w-28 rounded-xl transition-colors"
           :class="{
             'bg-teal-700/30': activeNav === item.name,
             'hover:bg-teal-700/30': true
@@ -28,7 +28,7 @@
               {{ item.icon }}
             </span>
             <!-- Label -->
-            <span class="text-base text-gray-300 font-medium">
+            <span class="text-md text-gray-300 font-medium">
               {{ item.name }}
             </span>
           </router-link>
@@ -51,6 +51,7 @@ const activeNav = ref(Requests)
 const navItems = ref([
   { name: 'Requests', icon: 'notifications', route: '/requests' },
   { name: 'AddEvent', icon: 'add_circle', route: '/add-event' },
+  { name: 'AddCommunity', icon: 'group_add', route: '/add-community' },
 ])
 
 </script>

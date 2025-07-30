@@ -6,6 +6,8 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth.routes');
 const eventRoutes=require('./routes/eventRoutes')
+const communityRoutes = require('./routes/communityRoutes');
+const uploadRoutes = require('./routes/uploadRoutes')
 const authenticate = require("./middleware/auth.middleware");
 
 const app = express();
@@ -20,6 +22,8 @@ app.use(cookieParser());
 
 app.use('/nearby-happenings/auth', authRoutes);
 app.use('/nearby-happenings/events',eventRoutes);
+app.use('/nearby-happenings/communities',communityRoutes)
+app.use('/nearby-happenings/upload', uploadRoutes)
 
 app.get('/', (req, res) => {
   res.send('Nearby Happenings API');

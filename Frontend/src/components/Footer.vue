@@ -1,5 +1,5 @@
 <template>
-    <footer class="bg-gray-800 text-gray-400 py-10 px-8">
+    <footer class="bg-emerald-400/10 mt-10 text-gray-400 py-10 px-8">
       <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
         <div>
           <h2 class="text-xl font-bold text-teal-400">Nearby Happenings</h2>
@@ -32,7 +32,7 @@
         </div>
       </div>
       <div class="border-t border-gray-700 mt-8 pt-4 text-center text-sm text-gray-500">
-        Made with <span class="material-icons text-teal-400 text-sm">favorite</span> for local communities
+        Made with <span class="material-icons text-teal-400 text-sm align-middle">favorite</span> for local communities
       </div>
     </footer>
 </template>

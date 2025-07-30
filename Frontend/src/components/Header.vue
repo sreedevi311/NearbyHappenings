@@ -1,5 +1,8 @@
 <template>
-    <header class="sticky top-0 z-10 bg-gray-900 shadow-md border border-gray-800 text-green-300 px-8 py-4 flex items-center justify-between gap-4 transition-all bg-gray-900">
+  <div class="sticky top-0 z-20 bg-gray-950 border-b border-gray-800 shadow-md">
+    
+    <header class="bg-emerald-400/10 shadow-md border border-gray-800 text-green-300 px-8 py-4 flex items-center justify-between gap-4 transition-all">
+
   <div class="flex items-center w-full gap-4 justify-between">
     <!-- Logo -->
     <img
@@ -14,9 +17,9 @@
         type="text"
         v-model="searchQuery"
         placeholder="Search events, artists, venues..."
-        class="w-full py-2 px-3 pr-10 rounded-full bg-gray-800 border border-gray-600 text-sm text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+        class="w-full py-2 px-3 pr-10 rounded-full bg-transparent border border-gray-600 text-sm text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
       />
-      <span class="material-icons absolute right-10 top-2 text-gray-500 text-sm">search</span>
+      <span class="material-icons absolute right-10 top-2 text-teal-500 text-sm">search</span>
 
       <!-- Tag pills -->
       <div
@@ -48,7 +51,7 @@
       <button
         v-if="!isLoggedIn"
         @click="openPanel('login')"
-        class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-3 py-1.5 text-sm rounded-full transition-colors"
+        class="bg-teal-500 hover:bg-teal-600 text-gray-950 font-semibold px-3 py-1.5 text-sm rounded-full transition-colors"
       >
         Sign In
       </button>
@@ -60,27 +63,34 @@
 </header>
 
     <!-- Top Navigation -->
-    <nav class="bg-gray-800 text-gray-400 px-10 py-2 border-t border-b border-gray-800 flex items-center gap-6 justify-start overflow-x-auto hide-scrollbar">
-      <ul class="flex items-center gap-6 whitespace-nowrap">
-        <li
-          v-for="item in navItems"
-          :key="item.name"
-          class="cursor-pointer text-sm font-medium transition-colors"
-          :class="{
-            'text-teal-400 pb-1': activeNav === item.name,
-            'hover:text-teal-300': true
-          }"
-        >
-          <router-link
-            :to="item.route"
-            class="flex items-center gap-2"
-            @click="activeNav = item.name"
-          >
-            <span>{{ item.name }}</span>
-          </router-link>
-        </li>
-      </ul>
-    </nav>
+    <nav class="bg-card/50 bg-gray-950 backdrop-blur-sm  px-10 py-3 overflow-x-auto hide-scrollbar">
+  <ul class="flex items-center gap-8 whitespace-nowrap">
+    <li
+      v-for="item in navItems"
+      :key="item.name"
+      class="relative group cursor-pointer"
+    >
+      <router-link
+        :to="item.route"
+        class="flex items-center gap-2 text-sm font-medium transition-all duration-300"
+        :class="activeNav === item.name 
+          ? 'text-teal-500' 
+          : 'text-gray-400'"
+        @click="activeNav = item.name"
+      >
+        <span>{{ item.name }}</span>
+      </router-link>
+
+      <!-- Gradient underline if active -->
+      <div
+        v-if="activeNav === item.name"
+        class="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-neon-cyan to-neon-blue rounded-full shadow-[0_0_10px_theme(colors.primary/0.5)]"
+      ></div>
+    </li>
+  </ul>
+</nav>
+
+    </div>
 </template>
 
 <script setup>

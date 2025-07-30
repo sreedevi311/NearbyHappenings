@@ -1,5 +1,5 @@
 <template>
-  <router-link :to="`/event/${event._id}`">
+  <button @click="goToEvent(event._id)">
   <div
     @mouseenter="hovered = true"
     @mouseleave="hovered = false"
@@ -48,12 +48,30 @@
       </p>
     </div>
   </div>
-</router-link>
+</button>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import dayjs from 'dayjs'
+
+import { useAuthStore } from '@/stores/auth'
+import { useUiStore } from '@/stores/ui'
+import { useRouter } from 'vue-router'
+
+const authStore = useAuthStore()
+const uiStore = useUiStore()
+const router = useRouter()
+
+function goToEvent(eventId) {
+  if (!authStore.user || !authStore.user._id) {
+    uiStore.openPanel('login')
+    return
+  }
+  router.push(`/event/${eventId}`)
+}
+
+
 const hovered = ref(false)
 defineProps(['event'])
 </script>

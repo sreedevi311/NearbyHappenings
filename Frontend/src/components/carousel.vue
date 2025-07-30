@@ -13,7 +13,7 @@
           class="flex-shrink-0 relative"
           style="width: 1000px"
         >
-          <router-link :to="`/event/${event._id}`">
+          <button @click="goToEvent(event._id)">
             <div
               class="relative h-[297px] w-[900px] mx-auto overflow-hidden rounded-xl border border-teal-400/20 bg-gray-900/20 shadow-xl"
             >
@@ -24,10 +24,13 @@
               />
 
               <!-- Event Info -->
+              <!-- Event Info -->
               <div
-                class="absolute bottom-0 left-0 right-0 px-6 pt-12 h-36 bg-gradient-to-t from-black/90 to-transparent z-10"
+                class="absolute bottom-0 left-0 right-0 px-6 py-4 h-36 bg-gradient-to-t from-black/90 to-transparent z-10 flex flex-col justify-end text-left"
               >
-                <h3 class="text-xl font-bold text-white mb-2">{{ event.eventName }}</h3>
+                <h3 class="text-xl font-bold text-white mb-4 w-full">
+                  {{ event.eventName }}
+                </h3>
                 <div class="flex flex-wrap items-center text-teal-300 gap-x-4 gap-y-2 text-md">
                   <div class="flex items-center">
                     <span class="material-icons mr-1 text-sm">event</span>
@@ -43,8 +46,9 @@
                   </div>
                 </div>
               </div>
+
             </div>
-          </router-link>
+          </button>
         </div>
       </div>
 
@@ -87,6 +91,13 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import dayjs from 'dayjs'
+import { useAuthStore } from '@/stores/auth'
+import { useUiStore } from '@/stores/ui'
+import { useRouter } from 'vue-router'
+
+const authStore = useAuthStore()
+const uiStore = useUiStore()
+const router = useRouter()
 
 const props = defineProps({
   events: {
@@ -95,6 +106,14 @@ const props = defineProps({
     default: () => []
   }
 })
+
+function goToEvent(eventId) {
+  if (!authStore.user || !authStore.user._id) {
+    uiStore.openPanel('login')
+    return
+  }
+  router.push(`/event/${eventId}`)
+}
 
 const currentIndex = ref(0)
 let autoScrollInterval = null

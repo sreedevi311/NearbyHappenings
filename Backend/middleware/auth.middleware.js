@@ -9,7 +9,7 @@ const requireAuth = (req, res, next) => {
 
   try {
     const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    req.user = { userId: payload.userId };
+    req.user = { userId: payload.userId, role: payload.role};
     next();
   } catch (err) {
     console.error('❌ Invalid access token');

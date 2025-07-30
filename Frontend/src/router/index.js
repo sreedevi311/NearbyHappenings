@@ -9,6 +9,7 @@ import Requests from '../components/Requests.vue'
 import AddEvent from '../components/AddEvent.vue'
 import Communities from '@/components/communities.vue'
 import CommunityView from '@/components/communityView.vue'
+import AdminCommunity from '@/components/AdminCommunity.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -70,6 +71,11 @@ const router = createRouter({
           component: AddEvent
         },
         {
+          path:'/add-community',
+          name:'admin-add-community',
+          component:AdminCommunity
+        },
+        {
           path: '/admin/edit-event/:id',
           name: 'admin-edit-event',
           component: HostEvent,
@@ -80,4 +86,24 @@ const router = createRouter({
     }
   ]
 })
+
+import { useAuthStore } from '@/stores/auth';
+import { useUiStore } from '@/stores/ui';
+
+router.beforeEach((to, from, next) => {
+  const auth = useAuthStore();
+  const ui = useUiStore();
+
+  // Define paths that require authentication
+  const protectedRoutes = ['/communities', '/host-event', '/events']; // Customize this list
+  const needsAuth = protectedRoutes.includes(to.path);
+
+  if (needsAuth && !auth.user) {
+    ui.openPanel('login'); // 🔐 show login panel
+    next(false);           // ❌ cancel navigation
+  } else {
+    next();                // ✅ allow navigation
+  }
+});
+
 export default router;

@@ -3,11 +3,33 @@
     
     <div class="flex flex-1">
       <!-- Main Content -->
-      <main class="flex-1 p-10 pt-3 overflow-x-hidden">
-         <div class="h-8 w-328 bg-transparent"></div>
-        <div>
-          <carousel :events="upcomingEvents" />
+      <main class="flex-1 overflow-x-hidden">
+        <div class="relative isolate overflow-hidden rounded-xl bg-black/30  backdrop-blur-xl mb-12">
+          <!-- Neon Glow Background Blobs -->
+          <div class="absolute inset-0 -z-10">
+  <!-- Main dark base: subtle gray-950 background wash -->
+  <div class="absolute inset-0 bg-gray-950/80"></div>
+
+  <!-- Overlay gradient wash: cyan to emerald -->
+  <div class="absolute inset-0 bg-gradient-to-br from-neon-cyan/10 via-transparent to-emerald-300/10 mix-blend-screen"></div>
+
+  <!-- Top-right cyan to blue glow -->
+  <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-gradient-to-br from-neon-cyan/20 to-neon-blue/10 rounded-full blur-3xl mix-blend-screen"></div>
+
+  <!-- Mid-center green glow -->
+  <div class="absolute bottom-1/4 left-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-emerald-300/20 to-green-400/10 rounded-full blur-3xl mix-blend-screen"></div>
+
+  <!-- Bottom-left green glow -->
+  <div class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-400/30 to-green-500/10 rounded-full blur-3xl mix-blend-screen"></div>
+</div>
+
+
+
+
+          <!-- Carousel -->
+          <carousel :events="upcomingEvents" class="pt-10" />
         </div>
+
 
         <div v-if="Object.keys(groupedEvents).length" class="space-y-5 px-4">
           <div v-for="(events, theme) in groupedEvents" :key="theme">
@@ -26,7 +48,7 @@
 
         <div v-if="Object.keys(groupedEvents).length===1" class="flex items-center justify-center h-24">
           <button 
-            @click="$router.push({ path: `/events` })"
+            @click="goToEvents"
             class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-full font-medium flex items-center gap-1 transition-all"
             >
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,6 +188,14 @@ async function handleThemeSelection(themes) {
   } catch (err) {
     console.error('❌ Failed to save preferences in handleThemeSelection:', err)
   }
+}
+
+function goToEvents() {
+  if (!authStore.user || !authStore.user._id) {
+    ui.openPanel('login')
+    return
+  }
+  router.push('/events')
 }
 
 watch(
