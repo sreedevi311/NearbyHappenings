@@ -19,12 +19,13 @@ const feedbackRoutes = require('./routes/feedback.routes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://nearby-happenings-1d0f118l3-sreedevi311s-projects.vercel.app'
+];
+
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'https://nearby-happenings-1d0f118l3-sreedevi311s-projects.vercel.app'
-    ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -33,6 +34,7 @@ app.use(cors({
   },
   credentials: true
 }));
+
 
 app.use(express.json());
 app.use(cookieParser());
