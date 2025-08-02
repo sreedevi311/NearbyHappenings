@@ -1,36 +1,46 @@
 <template>
-  <div class="max-w-xl mx-auto p-6 bg-white shadow rounded">
-    <h2 class="text-2xl font-bold mb-4">Create New Community</h2>
+  <div class="max-w-xl mx-auto mt-10 p-6 bg-gray-800 text-white rounded-lg shadow">
+    <h2 class="text-2xl font-bold text-teal-400 mb-4">Create New Community</h2>
 
     <form @submit.prevent="createCommunity">
       <!-- Theme Select -->
-      <label class="block mb-2 font-medium">Select Theme</label>
-      <select v-model="form.theme" required class="w-full p-2 border rounded mb-4">
-        <option disabled value="">-- Select a theme --</option>
-        <option v-for="theme in themes" :key="theme._id" :value="theme._id">
-          {{ theme.name }}
-        </option>
-      </select>
+      <div class="mb-4">
+        <label class="block mb-1 text-teal-300">Select Theme</label>
+        <select v-model="form.theme" required class="w-full p-2 rounded bg-gray-700 text-white">
+          <option disabled value="">-- Select a theme --</option>
+          <option v-for="theme in themes" :key="theme._id" :value="theme._id">
+            {{ theme.name }}
+          </option>
+        </select>
+      </div>
 
       <!-- Cities Input -->
-      <label class="block mb-2 font-medium">Cities (comma-separated)</label>
-      <input
-        type="text"
-        v-model="form.citiesInput"
-        placeholder="e.g. Narsapur, Palakollu"
-        class="w-full p-2 border rounded mb-4"
-        required
-      />
+      <div class="mb-4">
+        <label class="block mb-1 text-teal-300">Cities (comma-separated)</label>
+        <input
+          type="text"
+          v-model="form.citiesInput"
+          placeholder="e.g. Narsapur, Palakollu"
+          class="w-full p-2 rounded bg-gray-700 text-white"
+          required
+        />
+      </div>
 
-      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="bg-teal-500 hover:bg-teal-600 px-4 py-2 rounded transition"
+      >
         Create Community
       </button>
 
-      <p v-if="success" class="text-green-600 mt-4">✅ Community created successfully!</p>
-      <p v-if="error" class="text-red-600 mt-4">❌ {{ error }}</p>
+      <!-- Messages -->
+      <p v-if="success" class="text-green-400 mt-4">✅ Community created successfully!</p>
+      <p v-if="error" class="text-red-400 mt-4">❌ {{ error }}</p>
     </form>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue'

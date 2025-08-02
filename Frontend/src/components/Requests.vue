@@ -77,41 +77,71 @@ const declined = ref([])
 function switchTab(tab) {
   currentTab.value = tab
   currentPage.value = 1
+
+  if (tab === 'Requests') {
+    fetchPendingRequests()
+  } else if (tab === 'Accepted') {
+    fetchAcceptedRequests()
+  } else if (tab === 'Declined') {
+    fetchDeclinedRequests()
+  }
 }
 
-async function handleAccept(request,status) {
-  await api.put(`/events/update-status/${request._id}`, {status})
+
+async function handleAccept(request, status) {
+  await api.put(`/events/update-status/${request._id}`, { status })
   removeFromCurrentList(request)
-  accepted.value.push(request)
+  accepted.value.unshift({ ...request, status })
 }
 
-async function handleDecline(request,status) {
-  await api.put(`/events/update-status/${request._id}`, {status})
+async function handleDecline(request, status) {
+  await api.put(`/events/update-status/${request._id}`, { status })
   removeFromCurrentList(request)
-  declined.value.push(request)
+  declined.value.unshift({ ...request, status })
 }
+
 
 const pendingRequests = ref([])
 
 const fetchPendingRequests = async () => {
   try {
     const res = await api.get('/events/pending-requests') // your backend URL
-    pendingRequests.value = res.data
+    pendingRequests.value = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   } catch (error) {
     console.error('Error fetching pending events:', error)
   }
 }
 
-function removeFromCurrentList(request) {
-  const list =
-    currentTab.value === 'Requests'
-      ? pendingRequests
-      : currentTab.value === 'Accepted'
-      ? accepted
-      : declined
-
-  list.value = list.value.filter(r => r.id !== request.id)
+const fetchAcceptedRequests = async () => {
+  try {
+    const res = await api.get('/events/accepted-requests')
+    accepted.value = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  } catch (error) {
+    console.error('Error fetching accepted requests:', error)
+  }
 }
+
+const fetchDeclinedRequests = async () => {
+  try {
+    const res = await api.get('/events/declined-requests')
+    declined.value = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  } catch (error) {
+    console.error('Error fetching declined requests:', error)
+  }
+}
+
+
+function removeFromCurrentList(request) {
+  if (currentTab.value === 'Requests') {
+    pendingRequests.value = pendingRequests.value.filter(r => r._id !== request._id)
+  } else if (currentTab.value === 'Accepted') {
+    accepted.value = accepted.value.filter(r => r._id !== request._id)
+  } else if (currentTab.value === 'Declined') {
+    declined.value = declined.value.filter(r => r._id !== request._id)
+  }
+}
+
+
 
 const paginatedList = computed(() => {
   const list =
@@ -141,7 +171,12 @@ function prevPage() {
   if (currentPage.value > 1) currentPage.value--
 }
 
-onMounted(fetchPendingRequests)
+onMounted(() => {
+  fetchPendingRequests()
+  fetchAcceptedRequests()
+  fetchDeclinedRequests()
+})
+
 </script>
 <style scoped>
 .fade-move-enter-active,

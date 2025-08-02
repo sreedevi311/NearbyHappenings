@@ -2,7 +2,7 @@
 <template>
   <div class="flex h-screen">
    <!-- Sidebar -->
-<div class="w-96 bg-[#0f161b] text-white flex flex-col fixed top-28 left-0 h-[calc(100vh-7rem)] element-with-scrollbar">
+<div class="w-96 bg-[#0f161b] text-white flex flex-col fixed top-0 left-0 h-screen element-with-scrollbar">
   <div class="px-4 py-4 border-b border-gray-700">
     <h2 class="text-lg font-bold text-teal-500">Your Communities</h2>
   </div>
@@ -21,13 +21,13 @@
       </div>
       <button
         @click.stop="join(community._id)"
-        :disabled="communityStore.joined.includes(community._id)"
-        :class="communityStore.joined.includes(community._id)
+        :disabled="communityStore.joined?.includes(community._id)"
+        :class="communityStore.joined?.includes(community._id)
           ? 'bg-red-500 hover:bg-red-600'
           : 'bg-teal-500 hover:bg-teal-600'"
         class="text-sm text-white px-4 py-2 rounded-full"
       >
-        {{ communityStore.joined.includes(community._id) ? 'leave' : 'Join' }}
+        {{ communityStore.joined?.includes(community._id) ? 'leave' : 'Join' }}
       </button>
     </div>
   </div>

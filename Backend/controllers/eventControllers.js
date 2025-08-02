@@ -6,6 +6,7 @@ const City=require('../models/city.model');
 const User=require('../models/user.model')
 
 // Get events by theme
+
 const getEventsByTheme = async (req, res) => {
   try {
     const rawTheme = req.params.theme;
@@ -15,39 +16,49 @@ const getEventsByTheme = async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized: no user info' });
     }
 
-    // Fetch user to get their city
     const user = await User.findById(userId);
-    if (!user || !user.city) {
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.city) {
       return res.status(400).json({ message: 'User city not found' });
     }
 
+    // Normalize theme (e.g., yoga-wellness => yoga.*wellness)
     const cleaned = rawTheme.replace(/-/g, ' ').toLowerCase();
     const regex = new RegExp(cleaned.replace(/\s/g, '.*'), 'i');
 
-    console.log("🔍 Normalized theme regex:", regex);
-    console.log("📍 Filtering for city:", user.city);
+    const citiesToSearch = [user.city, ...(user.nearbyCities || [])];
 
     const events = await Event.find({
+      status: 'accepted', // only show accepted events to users
       theme: { $regex: regex },
-      city: user.city
+      city: { $in: citiesToSearch }
     }).sort({ date: 1 });
 
     if (!events.length) {
-      return res.status(404).json({ message: `No events found for theme "${rawTheme}" in your city` });
+      return res.status(404).json({
+        message: `No events found for theme "${rawTheme}" in your city or nearby cities`
+      });
     }
 
     res.status(200).json(events);
   } catch (err) {
-    console.error("❌ Error fetching events by theme:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 
+
 const saveFormEvent=async (req,res)=>{
   try {
+    const themeName = req.body.theme;
+    const matchedTheme = await Theme.findOne({ name: themeName });
+    const tag = matchedTheme.tag;
     const newEvent = new Event({
       ...req.body,
+      tag
     })
     await newEvent.save()
     res.status(201).json({ message: 'Event submitted successfully.' })
@@ -65,6 +76,26 @@ const pendingRequests=async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch pending events' });
   }
 }
+
+const acceptedRequests=async (req, res) => {
+  try {
+    const acceptedEvents = await Event.find({ createdBy:'host',status: 'accepted' });
+    res.status(200).json(acceptedEvents);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch pending events' });
+  }
+}
+
+const declinedRequests=async (req, res) => {
+  try {
+    const declinedEvents = await Event.find({ status: 'declined' });
+    res.status(200).json(declinedEvents);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch pending events' });
+  }
+}
+
+
 
 const updateStatusById=async (req, res) => {
   try {
@@ -146,7 +177,46 @@ const getEventById=async (req, res) => {
   }
 }
 
-const getEventThemes = async (req, res) => {
+const getEventThemesWithCount = async (req, res) => {
+  try {
+    const themeCounts = await Event.aggregate([
+      {
+        $group: {
+          _id: "$theme",
+          eventsCount: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "themes", // must match the actual MongoDB collection name
+          localField: "_id", // theme name in events
+          foreignField: "name", // name in themes collection
+          as: "themeData"
+        }
+      },
+      {
+        $unwind: "$themeData"
+      },
+      {
+        $project: {
+          _id: 1,
+          eventsCount: 1,
+          name: "$themeData.name",
+          posterUrl: "$themeData.posterUrl",
+          tag: "$themeData.tag",
+          isFavorite: { $literal: false } // optional default field
+        }
+      }
+    ]);
+
+    res.status(200).json(themeCounts);
+  } catch (error) {
+    console.error("Error fetching theme event counts:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const getAllEventThemes = async (req, res) => {
   try {
     const themes = await Theme.find({ active: true }).sort({ name: 1 });
     res.status(200).json(themes);
@@ -264,4 +334,58 @@ const getRandomThemeEvents = async (req, res) => {
   }
 };
 
-module.exports = { getEventsByTheme,saveFormEvent,pendingRequests,updateStatusById,adminAdded,deleteById,adminReAdd,getEventById ,adminUpdatedEventInfo,getEventThemes,getAllCities,userInterestedEvents,userCityUpcomingDayEvents,upcomingDayEvents,getRandomThemeEvents};
+
+const searchEvents = async (req, res) => {
+  const q = req.query.q;
+
+  if (!q || q.trim() === '') {
+    // Optional: return popular or recent events instead of 400
+    return res.status(200).json([]); // send empty array if query is empty
+  }
+
+  try {
+    const regex = new RegExp(q, 'i'); // case-insensitive
+    const events = await Event.find({
+      $or: [
+        { eventName: regex },
+        { tag: regex }
+      ]
+    }).limit(10);
+
+    res.json(events);
+  } catch (err) {
+    console.error('Search Error:', err);
+    res.status(500).json({ message: 'Server error while searching' });
+  }
+};
+const getAllTags = async (req, res) => {
+  try {
+    const tags = await Event.distinct('tag');
+    res.json(tags);
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    res.status(500).json({ error: 'Failed to fetch tags' });
+  }
+};
+
+module.exports = { getEventsByTheme,
+  saveFormEvent,
+  pendingRequests,
+  acceptedRequests,
+  declinedRequests,
+  updateStatusById,
+  adminAdded,
+  deleteById,
+  adminReAdd,
+  getEventById ,
+  adminUpdatedEventInfo,
+  getEventThemesWithCount,
+  getAllEventThemes,
+  getAllCities,
+  userInterestedEvents,
+  userCityUpcomingDayEvents,
+  upcomingDayEvents,
+  getRandomThemeEvents,
+  searchEvents,
+  getAllTags,
+};

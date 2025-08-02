@@ -1,17 +1,27 @@
 <template>
   <section class="mb-12 relative mt-2">
 
-    <div class="relative w-[1000px] mx-auto overflow-visible">
+    <div class="relative w-[1200px] mx-auto overflow-visible">
       <!-- Carousel Track -->
       <div
-        class="flex transition-transform duration-500 ease-in-out"
-        :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
-      >
+  class="flex gap-8 transition-transform duration-500 ease-in-out"
+  :style="{
+  transform: `translateX(calc(-${currentIndex * (cardWidth + gap)}px + ${(containerWidth - cardWidth) / 2 - fineTune}px))`
+}"
+>
+
+
         <div
           v-for="(event, index) in events"
           :key="event._id"
-          class="flex-shrink-0 relative"
-          style="width: 1000px"
+          class="flex-shrink-0"
+          :class="{
+            'scale-105 z-10': currentIndex === index,
+            'opacity-70 scale-95': currentIndex !== index
+          }"
+
+
+          style="width: 800px"
         >
           <button @click="goToEvent(event._id)">
             <div
@@ -31,7 +41,7 @@
                 <h3 class="text-xl font-bold text-white mb-4 w-full">
                   {{ event.eventName }}
                 </h3>
-                <div class="flex flex-wrap items-center text-teal-300 gap-x-4 gap-y-2 text-md">
+                <div class="flex flex-wrap items-center text-teal-300 gap-x-4 gap-y-2 text-sm">
                   <div class="flex items-center">
                     <span class="material-icons mr-1 text-sm">event</span>
                     <span>{{ dayjs(event.date).format('MMMM D, YYYY') }}</span>
@@ -40,7 +50,7 @@
                     <span class="material-icons mr-1 text-sm">schedule</span>
                     <span>{{ event.time }}</span>
                   </div>
-                  <div class="flex items-center">
+                  <div v-if="event.location" class="flex items-center">
                     <span class="material-icons mr-1 text-sm">location_on</span>
                     <span>{{ event.location.address }}</span>
                   </div>
@@ -106,6 +116,11 @@ const props = defineProps({
     default: () => []
   }
 })
+
+const cardWidth = 800
+const gap = 32 // gap-8 = 2rem = 32px
+const containerWidth = 1200
+const fineTune = 20 // Reduce this value to shift right slightly
 
 function goToEvent(eventId) {
   if (!authStore.user || !authStore.user._id) {

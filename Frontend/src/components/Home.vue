@@ -3,39 +3,17 @@
     
     <div class="flex flex-1">
       <!-- Main Content -->
-      <main class="flex-1 overflow-x-hidden">
-        <div class="relative isolate overflow-hidden rounded-xl bg-black/30  backdrop-blur-xl mb-12">
-          <!-- Neon Glow Background Blobs -->
-          <div class="absolute inset-0 -z-10">
-  <!-- Main dark base: subtle gray-950 background wash -->
-  <div class="absolute inset-0 bg-gray-950/80"></div>
-
-  <!-- Overlay gradient wash: cyan to emerald -->
-  <div class="absolute inset-0 bg-gradient-to-br from-neon-cyan/10 via-transparent to-emerald-300/10 mix-blend-screen"></div>
-
-  <!-- Top-right cyan to blue glow -->
-  <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-gradient-to-br from-neon-cyan/20 to-neon-blue/10 rounded-full blur-3xl mix-blend-screen"></div>
-
-  <!-- Mid-center green glow -->
-  <div class="absolute bottom-1/4 left-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-emerald-300/20 to-green-400/10 rounded-full blur-3xl mix-blend-screen"></div>
-
-  <!-- Bottom-left green glow -->
-  <div class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-400/30 to-green-500/10 rounded-full blur-3xl mix-blend-screen"></div>
-</div>
-
-
-
-
+      <main class="flex-1 overflow-x-hidden pb-24">
+        <div class="relative isolate overflow-hidden  mb-2">
           <!-- Carousel -->
           <carousel :events="upcomingEvents" class="pt-10" />
         </div>
 
-
-        <div v-if="Object.keys(groupedEvents).length" class="space-y-5 px-4">
+        <div v-if="Object.keys(groupedEvents).length" class=" px-4">
           <div v-for="(events, theme) in groupedEvents" :key="theme">
             <h2 class="text-2xl font-bold text-teal-400 mb-4">{{ theme }} Events</h2>
 
-            <div class="flex gap-6 overflow-x-auto hide-scrollbar pb-4">
+            <div class="flex gap-6 overflow-x-auto hide-scrollbar pb-10">
               <EventCard
                 v-for="event in events"
                 :key="event._id"
@@ -84,14 +62,10 @@
 
     <LocationSelector
       v-if="ui.showLocationModal"
-      @select="handleLocationSelect"
-      @close="ui.showLocationModal = false"
     />
 
     <InterestSelector
       v-if="ui.showInterestModal"
-      @submit="handleThemeSelection"
-      @close="ui.showInterestModal = false"
     />
   </div>
 </template>
@@ -154,40 +128,6 @@ async function handleSignOut() {
   console.log('logged out!')
   prefs.setCity('Select Location')
   ui.closePanel()
-}
-
-function handleLocationSelect(city) {
-  prefs.setCity(city)
-  ui.showLocationModal = false
-  ui.showInterestModal = true
-}
-
-async function handleThemeSelection(themes) {
-  console.log('📌 handleThemeSelection called with themes:', themes)
-
-  prefs.setThemes(themes)
-  ui.showInterestModal = false
-
-  try {
-    const themeIds = prefs.selectedThemes.map(t => t._id)
-    const city = prefs.selectedCity
-
-    console.log('📤 Calling authStore.updatePreferences with:', city, themeIds)
-
-    await authStore.updatePreferences(city, themeIds)
-
-    const userId = authStore.user?._id
-    if (userId) {
-      await eventStore.fetchGroupedEvents(userId)
-      await eventStore.fetchUpcomingEvents(userId)
-      console.log('✅ Events fetched after updating preferences')
-    } else {
-      console.warn('⚠️ User ID missing after preferences update')
-    }
-
-  } catch (err) {
-    console.error('❌ Failed to save preferences in handleThemeSelection:', err)
-  }
 }
 
 function goToEvents() {

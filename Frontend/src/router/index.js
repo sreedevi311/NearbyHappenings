@@ -1,20 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../components/Home.vue'
 import Events from '../components/Events.vue'
+import Communities from '@/components/communities.vue'
 import HostEvent from '../components/HostEvent.vue'
 import ThemeEvents from '../components/ThemeEvents.vue'
 import EventDetails from '../components/EventDetails.vue'
 import AdminPanel from '../components/AdminPanel.vue'
+import AdminCommunity from '@/components/AdminCommunity.vue'
 import Requests from '../components/Requests.vue'
 import AddEvent from '../components/AddEvent.vue'
-import Communities from '@/components/communities.vue'
-import CommunityView from '@/components/communityView.vue'
-import AdminCommunity from '@/components/AdminCommunity.vue'
+import OAuthSuccess from '../components/OAuthSuccess.vue'
+import Contact from '../components/Contact.vue'
+import Feedback from '../components/Feedback.vue' // Add this at the top
+import Review from '../components/Review.vue'
+
+//import Feedback from '../components/Feedback.vue' // Add this at the top
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // User routes
     {
       path: '/',
       name: 'home',
@@ -24,6 +28,11 @@ const router = createRouter({
       path: '/events',
       name: 'events',
       component: Events
+    },
+    {
+      path:'/communities',
+      name:'communities',
+      component:Communities
     },
     {
       path: '/host-event',
@@ -37,27 +46,39 @@ const router = createRouter({
       props: true
     },
     {
-      path: '/event/:id', // ✅ Corrected path
+      path: '/event/:id',
       name: 'event-details',
-      component: EventDetails,
+      component: EventDetails
     },
     {
-      path:'/communities',
-      component:Communities,
+      path: '/oauth-success',
+      name: 'oauth-success',
+      component: OAuthSuccess
     },
-    {
-      path: '/communities/:id',
-      name: 'community-view',
-      component: CommunityView
-    },
-    // Admin Panel with nested children
+     {
+  path: '/contact',
+  name: 'contact',
+  component: Contact
+},
+{
+  path: '/feedback',
+  name: 'feedback',
+  component: Feedback
+},
+{
+  path: '/reviews',
+  name: 'reviews',
+  component: Review
+},
+
+
     {
       path: '/admin-panel',
-      name:'admin-panel',
       component: AdminPanel,
       children: [
         {
-          path: '', // default child route when /admin-panel is visited
+          path: '',
+          name: 'admin-panel',
           redirect: 'requests'
         },
         {
@@ -79,13 +100,17 @@ const router = createRouter({
           path: '/admin/edit-event/:id',
           name: 'admin-edit-event',
           component: HostEvent,
-          props: route => ({ isEdit: true, eventId: route.params.id })
+          props: route => ({
+            isEdit: true,
+            eventId: route.params.id
+          })
         }
-
       ]
     }
   ]
 })
+
+export default router;
 
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
@@ -105,5 +130,3 @@ router.beforeEach((to, from, next) => {
     next();                // ✅ allow navigation
   }
 });
-
-export default router;

@@ -1,5 +1,5 @@
 <template>
-  <div class=" py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-12">
@@ -77,43 +77,55 @@
             </div>
 
             <!-- City -->
-            <div>
+             <div class="mb-4">
               <label for="city" class="block text-sm font-medium text-gray-400 mb-1">City *</label>
               <input 
                 v-model="form.city" 
                 @blur="validateField('city')"
                 type="text" 
                 id="city" 
-                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="e.g., San Francisco"
-              >
+                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500"
+                placeholder="Enter your city"
+                required
+              />
               <p v-if="errors.city" class="mt-1 text-sm text-red-400">{{ errors.city }}</p>
             </div>
+              
+   
 
-            <!-- Google Maps Location -->
-            <div>
-              <label class="block text-sm font-medium text-gray-400 mb-1">Location *</label>
-              <div class="relative">
-                <input 
-                  v-model="form.locationQuery" 
-                  @input="searchLocation"
-                  type="text" 
-                  class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Search location on Google Maps"
-                >
-                <div v-if="locationResults.length > 0" class="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-auto">
-                  <div 
-                    v-for="(result, index) in locationResults" 
-                    :key="index"
-                    @click="selectLocation(result)"
-                    class="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                  >
-                    <p class="text-white">{{ result.description }}</p>
-                  </div>
-                </div>
-              </div>
+            < <div>
+              <!-- Inside your <template> -->
+<div class="relative">
+  <label for="location" class="block text-sm font-medium text-gray-400 mb-1">Location *</label>
+  <input
+    id="location"
+    v-model="form.locationQuery"
+    @input="debouncedSearchLocation"
+    type="text"
+    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500"
+    placeholder="Search for a location"
+  />
+
+  <!-- Dropdown -->
+  <ul
+    v-if="locationResults.length > 0"
+    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+  >
+    <li
+      v-for="result in locationResults"
+      :key="result.place_id"
+      @click="selectLocation(result)"
+      class="px-4 py-2 cursor-pointer hover:bg-gray-600"
+    >
+    {{ result.display_name }}
+
+    </li>
+  </ul>
+</div>
+
               <p v-if="errors.location" class="mt-1 text-sm text-red-400">{{ errors.location }}</p>
             </div>
+
 
             <!-- Poster Upload -->
             <div>
@@ -127,13 +139,24 @@
                     </label>
                     <p class="pl-1">or drag and drop</p>
                   </div>
-                  <p class="text-xs text-gray-500">
-                    PNG, JPG, GIF up to 5MB
-                  </p>
+                  <p class="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
                   <p v-if="form.poster" class="text-sm text-green-400 mt-2">{{ form.poster.name }}</p>
                 </div>
               </div>
             </div>
+
+            <!-- Description -->
+            <div>
+              <label for="description" class="block text-sm font-medium text-gray-400 mb-1">Event Description</label>
+              <textarea 
+                v-model="form.description"
+                id="description"
+                rows="4"
+                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Briefly describe your event, purpose, and what participants can expect..."
+              ></textarea>
+            </div>
+
           </div>
         </div>
 
@@ -295,9 +318,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { api } from '../services/api';
 import { useRoute } from 'vue-router';
+import debounce from 'lodash.debounce';
 
 const route = useRoute();
 const isAdmin = route.name === 'admin-add-event';
@@ -308,6 +332,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['add-event', 'switch-tab', 'updated']);
+const selectedCity = ref('Visakhapatnam');
 
 const form = ref({
   eventName: '',
@@ -315,10 +340,10 @@ const form = ref({
   date: '',
   time: '',
   city: '',
-  location: null,
+  location: '',
   locationQuery: '',
+  selectedLocation: null,
   poster: null,
-  tag: '',
   description: '',
   orgName: '',
   orgEmail: '',
@@ -330,10 +355,10 @@ const form = ref({
   essentials: '',
   createdBy: isAdmin ? 'admin' : 'host',
   status: isAdmin ? 'accepted' : 'pending',
-  updatedByAdmin: false
+  updatedByAdmin: false,
 });
 
-const errors = ref({});
+const errors = ref({ location: '' });
 const isSubmitting = ref(false);
 const locationResults = ref([]);
 
@@ -350,23 +375,45 @@ const themes = ref([
   'Community Service & Awareness'
 ]);
 
-const searchLocation = () => {
-  if (form.value.locationQuery.length > 2) {
-    locationResults.value = [
-      { description: `${form.value.locationQuery}, City Center`, place_id: '1' },
-      { description: `${form.value.locationQuery} Community Park`, place_id: '2' },
-      { description: `${form.value.locationQuery} Convention Center`, place_id: '3' }
-    ];
-  } else {
+const searchLocation = async () => {
+  if (!form.value.locationQuery || form.value.locationQuery.length < 2) {
+    locationResults.value = []
+    return
+  }
+
+  try {
+    const response = await api.get('/location/search', {
+      params: {
+        query: form.value.locationQuery,
+        city: form.value.city || selectedCity.value 
+      }
+    });
+
+    locationResults.value = response.data;
+  } catch (error) {
+    console.error('Location search failed:', error);
     locationResults.value = [];
   }
 };
 
-const selectLocation = (loc) => {
-  form.value.location = loc;
-  form.value.locationQuery = loc.description;
+const debouncedSearchLocation = debounce(searchLocation, 400);
+
+watch(() => form.value.locationQuery, () => {
+  debouncedSearchLocation();
+});
+
+const selectLocation = (result) => {
+  form.value.locationQuery = result.display_name;
+  form.value.location = {
+    address: result.display_name, // instead of `name`
+    lat: parseFloat(result.lat),
+    lng: parseFloat(result.lon)   // rename `lon` to `lng`
+  };
+  form.value.selectedLocation = result;
   locationResults.value = [];
 };
+
+
 
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
@@ -403,10 +450,10 @@ const resetForm = () => {
     date: '',
     time: '',
     city: '',
-    location: null,
+    location: '',
     locationQuery: '',
+    selectedLocation: null,
     poster: null,
-    tag: '',
     description: '',
     orgName: '',
     orgEmail: '',
@@ -422,11 +469,39 @@ const resetForm = () => {
   };
 };
 
+const uploadPosterImage = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const res = await api.post('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      return  res.data.url // ✅ This is the Cloudinary URL
+  } catch (error) {
+    console.error('Image upload failed:', error);
+    return null;
+  }
+};
+
+
 const submitForm = async () => {
   if (!validateForm()) {
     alert('Please correct the highlighted errors');
     return;
   }
+
+let posterUrl = null;
+
+if (form.value.poster instanceof File) {
+  posterUrl = await uploadPosterImage(form.value.poster);
+} else if (typeof form.value.poster === 'string') {
+  posterUrl = form.value.poster;
+}
+
 
   const payload = {
     eventName: form.value.eventName,
@@ -435,8 +510,9 @@ const submitForm = async () => {
     time: form.value.time,
     city: form.value.city,
     location: form.value.location,
-    posterUrl: form.value.poster?.name || form.value.poster || null,
-    tag: form.value.tag,
+   posterUrl: typeof form.value.poster === 'string'
+  ? form.value.poster
+  : await uploadPosterImage(form.value.poster),
     description: form.value.description,
     organizer: {
       name: form.value.orgName,
@@ -454,6 +530,7 @@ const submitForm = async () => {
     status: form.value.status,
     updatedByAdmin: props.isEdit || isAdmin
   };
+console.log("Payload being sent:", JSON.parse(JSON.stringify(payload)));
 
   isSubmitting.value = true;
   try {
@@ -485,10 +562,10 @@ onMounted(async () => {
         date: data.date?.slice(0, 10),
         time: data.time,
         city: data.city,
-        location: data.location,
-        locationQuery: '',
+        location: data.location.address,
+        locationQuery: data.location.address,
+        selectedLocation: null,
         poster: data.posterUrl || null,
-        tag: data.tag || '',
         description: data.description || '',
         orgName: data.organizer?.name || '',
         orgEmail: data.organizer?.email || '',
@@ -502,6 +579,7 @@ onMounted(async () => {
         status: data.status || (isAdmin ? 'accepted' : 'pending'),
         updatedByAdmin: true
       };
+      debouncedSearchLocation(); 
     } catch (err) {
       console.error('Failed to load event for editing:', err);
     }

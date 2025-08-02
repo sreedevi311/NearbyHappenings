@@ -1,14 +1,10 @@
 <template class="bg-black">
-    <div class="container mx-auto px-4 py-6">
+    <div class="container mx-auto px-4 py-6 pb-20">
         <!-- Header with animated glow-->
-        <header class="text-center mb-16 relative">
-            <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400">
+        <header class="text-center mb-10 relative">
+            <h1 class="text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400">
                 Event Themes Explorer
             </h1>
-            <p class="text-lg text-gray-300 max-w-2xl mx-auto">
-                Discover your next adventure across diverse interest areas.
-            </p>
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-teal-500/10 blur-3xl -z-10"></div>
         </header>
 
         <!-- Theme cards grid -->
@@ -56,7 +52,7 @@
                         class="backdrop-blur-md bg-black/60 rounded-md inline-block px-3 py-1 transition-all duration-1000 transform"
                         :class="{'-translate-x-0 opacity-100': loaded, '-translate-x-10 opacity-0': !loaded}"
                         >
-                            <h3 class="text-white text-lg font-bold">
+                            <h3 class="text-white text-md font-bold">
                                 {{ theme.name }}
                             </h3>
                         </div>

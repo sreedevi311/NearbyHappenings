@@ -1,7 +1,13 @@
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    default: '',
+  },
+
   email: {
     type: String,
     required: true,
@@ -11,13 +17,31 @@ const userSchema = new mongoose.Schema({
 
   password: {
     type: String,
-    required: true,
+    validate: {
+      validator: function (v) {
+        if (!this.googleId && (!v || v.length === 0)) {
+          return false;
+        }
+        return true;
+      },
+      message: "Password is required unless signing in with Google.",
+    },
   },
 
-  role: { 
-  type: String, 
-  enum: ['user', 'admin'], 
-  default: 'user' 
+  googleId: {
+    type: String,
+    default: null,
+  },
+
+  isOAuth: {
+    type: Boolean,
+    default: false,
+  },
+
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
   },
 
   city: {
@@ -25,13 +49,16 @@ const userSchema = new mongoose.Schema({
     default: '',
   },
   nearbyCities: [String],
-  
-  interests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Theme' }],
-
+  interests: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Theme',
+    },
+  ],
   communities: [
     { type: mongoose.Schema.Types.ObjectId, ref: 'Community' }
   ],
-  
+
   isOrganizer: {
     type: Boolean,
     default: false,
@@ -41,7 +68,7 @@ const userSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Event',
-    }
+    },
   ],
 
   refreshToken: {
@@ -52,20 +79,17 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-  }
+  },
 });
 
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+// Hash password before saving (only if modified)
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || !this.password) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
-
-// Compare password
-userSchema.methods.comparePassword = function(password) {
+userSchema.methods.comparePassword = function (password) {
   return bcrypt.compare(password, this.password);
 };
-
 module.exports = mongoose.model('User', userSchema);

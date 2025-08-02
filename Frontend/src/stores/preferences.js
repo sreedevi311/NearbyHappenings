@@ -4,6 +4,11 @@ import { ref } from 'vue'
 export const usePreferencesStore = defineStore('preferences', () => {
   const selectedCity = ref('')
   const selectedThemes = ref([])
+  const nearbyCities = ref([]) // Add this to the store
+
+  function setNearbyCities(cities) {
+    nearbyCities.value = cities
+  }
 
   function setCity(city) {
     selectedCity.value = city
@@ -17,6 +22,8 @@ export const usePreferencesStore = defineStore('preferences', () => {
     selectedCity,
     selectedThemes,
     setCity,
+    nearbyCities,
+    setNearbyCities,
     setThemes
   }
 })

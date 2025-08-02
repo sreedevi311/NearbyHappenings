@@ -42,9 +42,9 @@
         <span class="material-icons text-teal-400 text-base mr-1">near_me</span>
         {{ event.distance }}
       </p>
-      <p class="flex items-center text-sm">
+      <p class="flex items-center text-sm truncate w-full">
         <span class="material-icons text-teal-400 text-base mr-1">location_on</span>
-        {{ event.city }}
+        <span class="truncate block">{{ event.location?.address }}</span>
       </p>
     </div>
   </div>

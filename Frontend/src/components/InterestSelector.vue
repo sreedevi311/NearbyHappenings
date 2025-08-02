@@ -3,7 +3,7 @@
   <div class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
     <div class="bg-white text-black w-full max-w-3xl rounded-xl p-6 relative">
       <!-- Close Button -->
-      <button class="absolute top-4 right-4 text-gray-500" @click="$emit('close')">
+      <button class="absolute top-4 right-4 text-gray-500" @click="ui.showInterestModal=false">
         <span class="material-icons">close</span>
       </button>
 
@@ -31,7 +31,7 @@
       <button
         :disabled="selected.length === 0"
         class="w-full py-2 rounded bg-teal-500 text-white font-semibold hover:bg-teal-600 disabled:opacity-50"
-        @click="submitSelection"
+        @click="handleThemeSelection"
       >
         Continue
       </button>
@@ -42,11 +42,20 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import {api} from '../services/api'
+import { useAuthStore } from '@/stores/auth'
+import { useEventStore } from '@/stores/event'
+import { useUiStore } from '@/stores/ui'
+import { usePreferencesStore } from '@/stores/preferences'
+
+const authStore = useAuthStore()
+const eventStore=useEventStore()
+const ui = useUiStore()
+const prefs = usePreferencesStore()
 
 const themes=ref([]);
 
 const fetchEventThemes=async()=>{
-    const {data}=await api.get('/events/get-event-themes')
+    const {data}=await api.get('/events/get-all-event-themes')
     themes.value=data;
 }
 
@@ -62,12 +71,34 @@ function toggleTheme(theme) {
   }
 }
 
-// Emit selected themes to parent
-function submitSelection() {
-  emit('submit', selected.value)
+async function handleThemeSelection() {
+  console.log('📌 handleThemeSelection called with themes:', selected.value)
+
+  prefs.setThemes(selected.value)
+  ui.showInterestModal = false
+
+  try {
+    const themeIds = prefs.selectedThemes.map(t => t._id)
+    const city = prefs.selectedCity
+
+    console.log('📤 Calling authStore.updatePreferences with:', city, themeIds)
+
+    await authStore.updatePreferences(city, themeIds)
+
+    const userId = authStore.user?._id
+    if (userId) {
+      await eventStore.fetchGroupedEvents(userId)
+      await eventStore.fetchUpcomingEvents(userId)
+      console.log('✅ Events fetched after updating preferences')
+    } else {
+      console.warn('⚠️ User ID missing after preferences update')
+    }
+
+  } catch (err) {
+    console.error('❌ Failed to save preferences in handleThemeSelection:', err)
+  }
 }
 
-const emit = defineEmits(['submit', 'close'])
 
 onMounted(() => fetchEventThemes())
 </script>

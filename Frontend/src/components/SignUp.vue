@@ -4,6 +4,8 @@
       <h2 class="text-3xl font-bold mb-2 text-center">Join Nearby Happenings</h2>
       <p class="mb-6 text-center text-gray-400">Create your account to discover local events</p>
 
+      <!-- Google error message -->
+      
       <!-- Email -->
       <input 
         v-model="email"
@@ -47,7 +49,9 @@
       </div>
 
       <!-- Google button -->
-      <button class="flex items-center justify-center border p-3 rounded w-full hover:bg-gray-700 bg-gray-800 text-gray-200">
+      <button 
+        @click="redirectToGoogle('signup')"
+        class="flex items-center justify-center border p-3 rounded w-full hover:bg-gray-700 bg-gray-800 text-gray-200">
         <img src="https://static.vecteezy.com/system/resources/previews/011/598/471/original/google-logo-icon-illustration-free-vector.jpg" alt="Google" class="w-8 h-8 mr-2" />
         Continue with Google
       </button>
@@ -62,13 +66,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref,onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
+const signupError = ref('')
 
 const errors = ref({
   email: '',
@@ -77,14 +82,23 @@ const errors = ref({
 })
 
 const emit = defineEmits(['close', 'loginSuccess', 'switchPanel'])
-
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
+
+// Show error if redirected with error query from Google OAuth
+
 
 const validateEmail = (email) => {
   const re = /\S+@\S+\.\S+/
   return re.test(email)
 }
+const redirectToGoogle = (mode) => {
+  window.location.href = 'http://localhost:5000/nearby-happenings/auth/google?mode=login'
+
+}
+
+
 
 const submitForm = async () => {
   errors.value = {
@@ -112,17 +126,19 @@ const submitForm = async () => {
     errors.value.confirmPassword = 'Passwords do not match'
   }
 
-  // If no errors, sign up
+  // Submit if valid
   if (!errors.value.email && !errors.value.password && !errors.value.confirmPassword) {
     try {
       await authStore.signup(email.value, password.value)
 
-      // ✅ Emit login success + close modal
       emit('close')
       emit('signupSuccess', authStore.user)
-
     } catch (error) {
-      console.error("❌ Signup failed:", error.response?.data || error.message)
+      if (error.response?.data?.message?.includes('already exists')) {
+        errors.value.email = 'Email is already registered. Please sign in.'
+      } else {
+        console.error("❌ Signup failed:", error.response?.data || error.message)
+      }
     }
   }
 }

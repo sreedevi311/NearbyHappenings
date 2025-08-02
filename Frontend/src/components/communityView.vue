@@ -1,9 +1,9 @@
 <template>
   <div v-if="community" class="flex flex-col h-screen bg-[#111B1F] text-white">
     <!-- Header -->
-    <div class="flex items-center justify-between bg-[#1F2C33] p-2 border-b border-gray-700 sticky top-28 right-0">
+    <div class="flex items-center justify-between bg-[#1F2C33] p-2 border-b border-gray-700 sticky top-0 right-0">
       <div class="flex items-center gap-3 ">
-        <div class="w-10 h-10 rounded-full bg-[#128C7E]/30 flex items-center justify-center text-[#128C7E] font-bold bg-teal-500">
+        <div class="w-10 h-11 rounded-full bg-[#128C7E]/30 flex items-center justify-center text-[#128C7E] font-bold bg-teal-500">
           {{ community.theme.name.charAt(0).toUpperCase() }}
         </div>
         <div>

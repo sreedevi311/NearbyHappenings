@@ -37,10 +37,10 @@
           </div>
         </div>
 
-        <h2 class="mt-6 text-2xl font-semibold mb-2 gradient-text inline-block">About The Event</h2>
-        <div class="text-lg text-gray-300">{{ eventStore.selectedEvent.description }}</div>
+        <h2 v-if="eventStore.selectedEvent.description" class="mt-10 text-2xl font-semibold mb-2 gradient-text inline-block">About The Event</h2>
+        <div class="text-lg mt-2 text-gray-300">{{ eventStore.selectedEvent.description }}</div>
 
-        <div class="mt-6">
+        <div class="mt-8 mb-10">
           <h2 class="text-2xl font-semibold mb-2 gradient-text inline-block">Organizer Details</h2>
           <p>
             <span class="block gradient-text font-semibold mb-2">Contact:</span>

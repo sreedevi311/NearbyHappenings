@@ -5,89 +5,70 @@
         {{ formattedThemeName }} Events
       </h1>
 
-      <div v-if="events.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <div
-          v-for="event in events"
-          :key="event._id"
-          class="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden neon-border cursor-pointer"
-          @click="goToEventDetails(event._id)"
-        >
-          <div class="relative h-48">
-            <img :src="event.posterUrl" :alt="event.name" class="w-full h-full object-cover" />
-            
-            <div class="absolute bottom-0 left-0 w-full bg-black/60 text-white text-lg font-bold px-3 py-2">
-              <h3>{{ event.eventName }}</h3>
-            </div>
-          </div>
-          <div class="p-4 space-y-1">
-            <p class="flex items-center text-sm mb-4">
-              <span class="material-icons text-teal-400 text-base mr-1">calendar_today</span>
-              {{ dayjs(event.date).format('MMMM D, YYYY') }} &nbsp;|&nbsp;
-              <span class="material-icons text-teal-400 text-base mr-1">schedule</span>
-              {{ event.time }}
-            </p>
-            <p v-if="event.distance" class="flex items-center text-sm">
-              <span class="material-icons text-teal-400 text-base mr-1">near_me</span>
-              {{ event.distance }}
-            </p>
-            <p v-if="event.location && event.location.address" class="flex items-center text-sm">
-              <span class="material-icons text-teal-400 text-base mr-1">location_on</span>
-              {{ event.location.address }}
-            </p>
+      <div v-if="groupedEvents">
+        <div v-for="(cityEvents, city) in groupedEvents" :key="city" class="mb-10">
+          <h2 class="text-2xl text-teal-300 font-semibold mb-4 capitalize">{{ city }} Events</h2>
+          <div class="flex gap-6 overflow-x-auto hide-scrollbar pb-4 pt-3">
+            <EventCard
+              v-for="event in cityEvents"
+              :key="event._id"
+              :event="event"
+              class="min-w-[300px]"
+            />
           </div>
         </div>
       </div>
 
       <div v-else class="text-center py-20">
-        <h2 class="text-2xl font-bold">loading...</h2>
+        <h2 class="text-2xl font-bold">Loading...</h2>
       </div>
     </div>
   </div>
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { api } from '../services/api'
-import dayjs from 'dayjs'
+import EventCard from '@/components/EventCard.vue' // ✅ Make sure the path is correct
 
 const route = useRoute()
-const router = useRouter()
 
 const events = ref([])
-const selectedTheme = route.params.theme.replace(/-/g, ' ')
+const groupedEvents = ref(null)
 
+const selectedTheme = route.params.theme.replace(/-/g, ' ')
 const formattedThemeName = computed(() => selectedTheme)
+
+const groupByCity = (eventsArray) => {
+  const grouped = {}
+  for (const event of eventsArray) {
+    const city = event.city || 'Unknown'
+    if (!grouped[city]) grouped[city] = []
+    grouped[city].push(event)
+  }
+  return grouped
+}
 
 const fetchEvents = async () => {
   try {
     const response = await api.get(`/events/theme/${selectedTheme}`)
     events.value = response.data
+    groupedEvents.value = groupByCity(response.data)
   } catch (err) {
     console.error("Error fetching events:", err)
   }
 }
 
-const goToEventDetails = (event_id) => {
-  console.log('hello')
-  router.push(`/event/${event_id}`)
-}
-
-onMounted(async () => {
-  await fetchEvents()
+onMounted(() => {
+  fetchEvents()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 </script>
 
 
 <style scoped>
-.pulse-animation {
-  animation: pulse 2s infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
 .neon-border {
   position: relative;
   overflow: hidden;
@@ -109,4 +90,13 @@ onMounted(async () => {
   mask-composite: exclude;
   pointer-events: none;
 }
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 </style>
+

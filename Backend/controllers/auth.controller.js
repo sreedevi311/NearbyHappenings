@@ -2,6 +2,9 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user.model");
 const City = require('../models/city.model');
 const jwt = require("jsonwebtoken");
+const { sendEmail } = require('../utils/emailSender')
+const Contact = require('../models/contact.model');
+const passport = require('passport')
 const { generateAccessToken, generateRefreshToken } = require("../utils/token");
 
 // Helper to set cookies
@@ -205,6 +208,107 @@ const updateUserPreferences = async (req, res) => {
   }
 };
 
+// 📨 Contact Form Submission
+const submitContactForm = async (req, res) => {
+  const { name, email, subject, message } = req.body;
+
+  // Basic validation
+  if (!name || !email || !subject || !message) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  try {
+    // Save contact message to MongoDB
+    const newContact = new Contact({ name, email, subject, message });
+    await newContact.save();
+
+    // Send email notification to admin
+    await sendEmail(
+      'vivekpotnuru9392@gmail.com', // ✅ FIXED typo here
+      `New Contact: ${subject}`,
+      `
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `
+    );
+
+    return res.json({ message: 'Message sent successfully' });
+  } catch (err) {
+    console.error('❌ Error saving contact message:', err);
+    return res.status(500).json({ message: 'Something went wrong' });
+  }
+};
+
+
+const googleAuthCallback = async (req, res) => {
+  const mode = req.query.state; // 'login' or 'signup'
+  const { email } = req.user;
+
+  try {
+    let user = await User.findOne({ email });
+
+    // Signup flow
+    if (mode === 'signup') {
+      if (user) {
+        return res.redirect('http://localhost:5173/?googleError=' + encodeURIComponent('Account already exists. Please sign in.'));
+      }
+
+      user = new User({ email, authProvider: 'google' });
+      await user.save();
+    }
+
+    // Login flow
+    else if (mode === 'login') {
+      if (!user) {
+        return res.redirect('http://localhost:5173/?googleError=' + encodeURIComponent('No account found. Please sign up.'));
+      }
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
+
+    // Save refresh token in DB
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // Set tokens in secure httpOnly cookies
+    res.cookie('accessToken', accessToken, {
+  httpOnly: true,
+  secure: false, // change to true in production (HTTPS)
+  sameSite: 'Lax',
+  maxAge: 15 * 60 * 1000 // 15 minutes
+});
+
+res.cookie('refreshToken', refreshToken, {
+  httpOnly: true,
+  secure: false, // change to true in production
+  sameSite: 'Lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+});
+
+    // Redirect to Vue app (OAuth success)
+    return res.redirect('http://localhost:5173/');
+  } catch (err) {
+    console.error('❌ Google OAuth callback error:', err);
+    return res.redirect('http://localhost:5173/?googleError=' + encodeURIComponent('OAuth login failed.'));
+  }
+};
+
+
+
+const googleAuthInitiate = (req, res, next) => {
+  const mode = req.query.mode === 'signup' ? 'signup' : 'login' // Validate mode input
+
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account', // 👈 Forces account selector every time
+    state: mode               // 👈 Passes mode to the callback
+  })(req, res, next)
+};
 
 module.exports = {
   profile,
@@ -212,5 +316,8 @@ module.exports = {
   signup,
   refreshToken,
   logout,
-  updateUserPreferences
+  updateUserPreferences,
+  googleAuthCallback,
+  googleAuthInitiate,
+  submitContactForm,
 };

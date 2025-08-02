@@ -11,7 +11,7 @@
         placeholder="Enter your email" 
         class="border p-3 mb-3 rounded w-full bg-gray-800 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400"
       />
-      <p v-if="errors.email" class="text-red-500 text-sm mb-2">{{ errors.email }}</p>
+      <p v-if="signupError" class="text-red-400 text-sm text-center mb-4">{{ signupError }}</p>
 
       <!-- Password -->
       <input 
@@ -38,15 +38,19 @@
       </div>
 
       <!-- Google -->
-      <button class="flex items-center justify-center border p-3 rounded w-full bg-gray-800 hover:bg-gray-700 transition-colors text-gray-200">
+      <button 
+        @click="redirectToGoogle('login')"
+        class="flex items-center justify-center border p-3 rounded w-full bg-gray-800 hover:bg-gray-700 transition-colors text-gray-200"
+      >
         <img src="https://static.vecteezy.com/system/resources/previews/011/598/471/original/google-logo-icon-illustration-free-vector.jpg" alt="Google" class="w-8 h-8 mr-2" />
         Continue with Google
       </button>
+      <p v-if="googleErrorMessage" class="text-red-400 text-sm text-center mb-4">{{ googleErrorMessage }}</p>
 
       <!-- Sign Up Switch -->
       <p class="mt-6 text-center text-gray-400">
         Don't have an account?
-        <button @click="$emit('switchPanel', 'signup')" class="text-teal-400 font-semibold">Sign up</button>
+        <button @click="uiStore.switchPanel('signup')" class="text-teal-400 font-semibold">Sign up</button>
       </p>
     </div>
   </div>
@@ -54,32 +58,27 @@
 
 <script setup>
 import { ref } from 'vue'
-import { api } from '@/services/api' // Adjust path as needed
+import { api } from '@/services/api'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'  // adjust path if needed
+import { useAuthStore } from '@/stores/auth'
+import { useUiStore } from '@/stores/ui'
 
 const email = ref('')
 const password = ref('')
+const errors = ref({ email: '', password: '' })
+const googleErrorMessage = ref('')
+const signupError = ref('')
 
 const router = useRouter()
 const authStore = useAuthStore()
+const uiStore=useUiStore()
 
-const errors = ref({
-  email: '',
-  password: '',
-})
 const emit = defineEmits(['close', 'switchPanel'])
 
-const validateEmail = (email) => {
-  const re = /\S+@\S+\.\S+/
-  return re.test(email)
-}
+const validateEmail = (email) => /\S+@\S+\.\S+/.test(email)
 
 const submitForm = async () => {
-  errors.value = {
-    email: '',
-    password: '',
-  }
+  errors.value = { email: '', password: '' }
 
   if (!email.value) {
     errors.value.email = 'Email is required'
@@ -93,15 +92,9 @@ const submitForm = async () => {
 
   if (!errors.value.email && !errors.value.password) {
     try {
-      console.log("🛂 Submitting login:", email.value)
-
-      // ✅ Call the authStore's login action
       await authStore.login(email.value, password.value)
-
-      console.log("✅ Login success. Tokens saved in store")
       emit('close')
-    emit('loginSuccess', authStore.user)
-      // ✅ Redirect after successful login
+      emit('loginSuccess', authStore.user)
       if (authStore.user.role === 'admin') {
         router.push('/admin-panel');
       } else {
@@ -109,9 +102,14 @@ const submitForm = async () => {
       }
 
     } catch (error) {
-      console.error("❌ Login failed:", error.response?.data || error.message)
+      console.error("Login failed:", error.response?.data || error.message)
     }
   }
 }
 
+// 🔑 Google OAuth login
+const redirectToGoogle = (mode) => {
+window.location.href = 'http://localhost:5000/nearby-happenings/auth/google?mode=login'
+
+}
 </script>

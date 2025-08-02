@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gray-950">
-    <Header v-if="hideHeaderNFooter"></Header>
+  <div class="min-h-screen bg-black">
+    <Header v-if="!hideHeaderNFooter"></Header>
     <router-view/>
-    <Footer v-if="hideHeaderNFooter"></Footer>
+    <Footer v-if="!hideHeaderNFooter"></Footer>
   </div>
 </template>
 
@@ -14,7 +14,10 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const hideHeaderNFooter = computed(() => !['/requests', '/add-event','/add-community',  '/communities'].includes(route.path))
+const hideHeaderNFooter = computed(() =>
+  ['/requests', '/add-event', '/add-community', '/communities'].includes(route.path) ||
+  route.path.startsWith('/admin/edit-event')
+)
 </script>
 
 <style>
