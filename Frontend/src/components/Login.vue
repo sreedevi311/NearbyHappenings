@@ -109,7 +109,8 @@ const submitForm = async () => {
 
 // 🔑 Google OAuth login
 const redirectToGoogle = (mode) => {
-window.location.href = 'http://localhost:5000/nearby-happenings/auth/google?mode=login'
+window.location.href = 'https://nearby-happenings-backend.vercel.app/nearby-happenings/auth/google?mode=login'
+
 
 }
 </script>
