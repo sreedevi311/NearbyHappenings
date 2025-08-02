@@ -59,7 +59,7 @@
       <!-- Already have account -->
       <p class="mt-6 text-center text-gray-400">
         Already have an account?
-        <button @click="uiStore.switchPanel('login')" class="text-teal-500 font-semibold">Sign in</button>
+        <button @click="ui.switchPanel('login')" class="text-teal-500 font-semibold">Sign in</button>
       </p>
     </div>
   </div>
@@ -69,7 +69,7 @@
 import { ref,onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-
+import { useUiStore } from '@/stores/ui'
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
@@ -82,9 +82,8 @@ const errors = ref({
 })
 
 const emit = defineEmits(['close', 'loginSuccess', 'switchPanel'])
-const router = useRouter()
-const route = useRoute()
 const authStore = useAuthStore()
+const ui=useUiStore()
 
 // Show error if redirected with error query from Google OAuth
 
