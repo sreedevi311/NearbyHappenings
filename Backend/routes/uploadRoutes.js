@@ -4,12 +4,13 @@ const router = express.Router()
 const multer = require('multer')
 const { v2: cloudinary } = require('cloudinary')
 const { CloudinaryStorage } = require('multer-storage-cloudinary')
+require('dotenv').config();
 
 // 🔐 Replace with your real credentials from Cloudinary dashboard
 cloudinary.config({
-  cloud_name: 'dka3g8c0g',
-  api_key: '378735161735156',
-  api_secret: 'EnrTQQrAiFfmdvvcSNqTwGolXnc'
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
 // 📦 Setup multer to use Cloudinary as storage

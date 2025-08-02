@@ -59,7 +59,7 @@
       <!-- Already have account -->
       <p class="mt-6 text-center text-gray-400">
         Already have an account?
-        <button @click="$emit('switchPanel', 'login')" class="text-teal-500 font-semibold">Sign in</button>
+        <button @click="uiStore.switchPanel('login')" class="text-teal-500 font-semibold">Sign in</button>
       </p>
     </div>
   </div>
