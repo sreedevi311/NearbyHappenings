@@ -20,8 +20,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
+  'https://nearby-happenings-5t62c9sm9-sreedevi311s-projects.vercel.app',
   'https://nearby-happenings-1d0f118l3-sreedevi311s-projects.vercel.app',
-  'https://nearbyhappenings.onrender.com' // your backend domain
+  'http://localhost:5173' // optional, only for local testing
 ];
 
 app.use(cors({
