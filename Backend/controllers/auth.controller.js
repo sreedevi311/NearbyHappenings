@@ -253,7 +253,7 @@ const googleAuthCallback = async (req, res) => {
     // Signup flow
     if (mode === 'signup') {
       if (user) {
-        return res.redirect('http://localhost:5173/?googleError=' + encodeURIComponent('Account already exists. Please sign in.'));
+        return res.redirect('https://nearby-happenings-1d0f118l3-sreedevi311s-projects.vercel.app/?googleError=' + encodeURIComponent('Account already exists. Please sign in.'));
       }
 
       user = new User({ email, authProvider: 'google' });
@@ -263,7 +263,7 @@ const googleAuthCallback = async (req, res) => {
     // Login flow
     else if (mode === 'login') {
       if (!user) {
-        return res.redirect('http://localhost:5173/?googleError=' + encodeURIComponent('No account found. Please sign up.'));
+        return res.redirect('https://nearby-happenings-1d0f118l3-sreedevi311s-projects.vercel.app/?googleError=' + encodeURIComponent('No account found. Please sign up.'));
       }
     }
 
@@ -275,28 +275,29 @@ const googleAuthCallback = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Set tokens in secure httpOnly cookies
+    // Set secure, cross-site cookies
     res.cookie('accessToken', accessToken, {
-  httpOnly: true,
-  secure: false, // change to true in production (HTTPS)
-  sameSite: 'Lax',
-  maxAge: 15 * 60 * 1000 // 15 minutes
-});
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000 // 15 minutes
+    });
 
-res.cookie('refreshToken', refreshToken, {
-  httpOnly: true,
-  secure: false, // change to true in production
-  sameSite: 'Lax',
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-});
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
 
-    // Redirect to Vue app (OAuth success)
-    return res.redirect('http://localhost:5173/');
+    // ✅ Redirect to Vercel frontend
+    return res.redirect('https://nearby-happenings-1d0f118l3-sreedevi311s-projects.vercel.app/');
   } catch (err) {
     console.error('❌ Google OAuth callback error:', err);
-    return res.redirect('http://localhost:5173/?googleError=' + encodeURIComponent('OAuth login failed.'));
+    return res.redirect('https://nearby-happenings-1d0f118l3-sreedevi311s-projects.vercel.app/?googleError=' + encodeURIComponent('OAuth login failed.'));
   }
 };
+
 
 
 
