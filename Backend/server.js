@@ -20,11 +20,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
-  'https://nearbyhappenings.vercel.app' // no localhost here
+  'https://nearbyhappenings.vercel.app'  // ✅ Your deployed frontend domain only
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
+    console.log("CORS origin:", origin);  // Optional: For debugging
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -33,6 +34,7 @@ app.use(cors({
   },
   credentials: true
 }));
+
 
 
 
