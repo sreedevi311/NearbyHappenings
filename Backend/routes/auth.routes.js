@@ -15,15 +15,10 @@ router.get('/google', authController.googleAuthInitiate)
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: 'https://nearby-happenings-5t62c9sm9-sreedevi311s-projects.vercel.app/login',
+    failureRedirect: '/login',
     successRedirect: 'https://nearby-happenings-5t62c9sm9-sreedevi311s-projects.vercel.app',
   })
 );
 
-
-router.get('/google', (req, res) => {
-  console.log("Hit /auth/google", req.headers.origin);
-  next();
-});
 
 module.exports = router;
