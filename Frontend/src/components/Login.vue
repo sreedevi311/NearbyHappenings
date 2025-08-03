@@ -76,6 +76,7 @@ const uiStore=useUiStore()
 const emit = defineEmits(['close', 'switchPanel'])
 
 const validateEmail = (email) => /\S+@\S+\.\S+/.test(email)
+console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
 
 const submitForm = async () => {
   errors.value = { email: '', password: '' }
