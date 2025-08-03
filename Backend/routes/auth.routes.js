@@ -15,10 +15,15 @@ router.get('/google', authController.googleAuthInitiate)
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/login',
-    successRedirect: 'https://nearby-happenings-5t62c9sm9-sreedevi311s-projects.vercel.app',
-  })
+    failureRedirect: '/login', // optional
+    session: true,
+  }),
+  (req, res) => {
+    // ✅ Redirect with cookie session to frontend
+    res.redirect('https://nearby-happenings.vercel.app'); // or a success route
+  }
 );
+
 
 
 module.exports = router;
