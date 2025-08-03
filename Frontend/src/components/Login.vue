@@ -109,7 +109,9 @@ const submitForm = async () => {
 
 // 🔑 Google OAuth login
 const redirectToGoogle = (mode) => {
- window.location.href = `${import.meta.env.VITE_API_URL}/auth/google?mode=${mode}`;
+ console.log("Redirecting to:", `${import.meta.env.VITE_API_URL}/auth/google?mode=login`);
+window.location.href = `${import.meta.env.VITE_API_URL}/auth/google?mode=login`;
+
 }
 
 </script>
