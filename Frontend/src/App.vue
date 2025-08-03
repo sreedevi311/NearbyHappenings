@@ -12,6 +12,7 @@ import Footer from './components/Footer.vue'
 
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+console.log("🌐 Deployed VITE_API_URL:", import.meta.env.VITE_API_URL);
 
 const route = useRoute()
 const hideHeaderNFooter = computed(() =>
