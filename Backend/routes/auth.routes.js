@@ -14,9 +14,12 @@ router.get('/google', authController.googleAuthInitiate)
 // Google OAuth callback
 router.get(
   '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login', session: false }),
-  authController.googleAuthCallback
-)
+  passport.authenticate('google', {
+    failureRedirect: 'https://nearby-happenings-5t62c9sm9-sreedevi311s-projects.vercel.app/login',
+    successRedirect: 'https://nearby-happenings-5t62c9sm9-sreedevi311s-projects.vercel.app',
+  })
+);
+
 
 router.get('/google', (req, res) => {
   console.log("Hit /auth/google", req.headers.origin);
