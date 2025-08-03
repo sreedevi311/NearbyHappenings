@@ -18,12 +18,5 @@ router.get(
     failureRedirect: '/login', // optional
     session: true,
   }),
-  (req, res) => {
-    // ✅ Redirect with cookie session to frontend
-    res.redirect('https://nearby-happenings.vercel.app'); // or a success route
-  }
-);
-
-
-
+  
 module.exports = router;
