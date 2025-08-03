@@ -5,7 +5,7 @@ const User = require('../models/user.model');
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'https://nearbyhappenings.onrender.com/nearby-happenings/auth/google/callback'
+  callbackURL: process.env.GOOGLE_CALLBACK_URL
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     const email = profile.emails[0].value;
@@ -24,8 +24,23 @@ passport.use(new GoogleStrategy({
       });
     }
 
-    return done(null, user);
+    return done(null, user._id); // ✅ store only ID in session
   } catch (err) {
     return done(err, null);
   }
 }));
+
+// ✅ store only user ID in the session
+passport.serializeUser((userId, done) => {
+  done(null, userId);
+});
+
+// ✅ retrieve full user from DB by ID
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id).select('-password');
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
