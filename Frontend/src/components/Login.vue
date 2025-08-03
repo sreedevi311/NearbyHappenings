@@ -109,7 +109,7 @@ const submitForm = async () => {
 
 // 🔑 Google OAuth login
 const redirectToGoogle = (mode) => {
-  window.location.href = `https://nearbyhappenings.onrender.com/nearby-happenings/auth/google?mode=${mode}`
+ window.location.href = `${import.meta.env.VITE_API_URL}/auth/google?mode=${mode}`;
 }
 
 </script>
