@@ -76,7 +76,7 @@ const uiStore=useUiStore()
 const emit = defineEmits(['close', 'switchPanel'])
 
 const validateEmail = (email) => /\S+@\S+\.\S+/.test(email)
-console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
+
 
 const submitForm = async () => {
   errors.value = { email: '', password: '' }
@@ -110,10 +110,7 @@ const submitForm = async () => {
 
 // 🔑 Google OAuth login
 const redirectToGoogle = (mode) => {
-  const url = import.meta.env.VITE_API_URL;
-  console.log('VITE_API_URL is:', url);
- console.log("Redirecting to:", `${import.meta.env.VITE_API_URL}/auth/google?mode=login`);
-   window.location.href = `${url}/auth/google?mode=login`;
+   window.location.href = `https://nearbyhappenings.onrender.com/nearby-happenings/auth/google?mode=login`;
 }
 
 </script>
