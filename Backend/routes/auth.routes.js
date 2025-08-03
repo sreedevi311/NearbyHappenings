@@ -18,5 +18,9 @@ router.get(
   authController.googleAuthCallback
 )
 
+router.get('/google', (req, res) => {
+  console.log("Hit /auth/google", req.headers.origin);
+  next();
+});
 
 module.exports = router;
