@@ -20,15 +20,16 @@
         <p class="text-xs text-gray-400 truncate">Cities: {{ community.cities.join(', ') }}</p>
       </div>
       <button
-        @click.stop="join(community._id)"
-        :disabled="communityStore.joined?.includes(community._id)"
-        :class="communityStore.joined?.includes(community._id)
-          ? 'bg-red-500 hover:bg-red-600'
-          : 'bg-teal-500 hover:bg-teal-600'"
-        class="text-sm text-white px-4 py-2 rounded-full"
-      >
-        {{ communityStore.joined?.includes(community._id) ? 'leave' : 'Join' }}
-      </button>
+          @click.stop="toggleJoin(community._id)"
+          :class="communityStore.joined?.includes(community._id)
+            ? 'bg-red-500 hover:bg-red-600'
+            : 'bg-teal-500 hover:bg-teal-600'"
+          class="text-sm text-white px-4 py-2 rounded-full"
+        >
+          {{ communityStore.joined?.includes(community._id) ? 'Leave' : 'Join' }}
+        </button>
+
+
     </div>
   </div>
 </div>
@@ -57,13 +58,16 @@ const selectedCommunity = ref(null)
 const hoveredCommunity = ref(null)
 
 async function toggleJoin(id) {
+  const userId = authStore.user._id
   if (communityStore.joined.includes(id)) {
-    await communityStore.leaveCommunity(id)
+    await communityStore.leaveCommunity(id, userId)
+    selectedCommunity.value = null
   } else {
-    await communityStore.joinCommunity(id)
+    await communityStore.joinCommunity(id, userId)
+    await selectCommunity(id)
   }
-  await selectCommunity(id)
 }
+
 
 onMounted(() => {
   communityStore.fetchSuggested(

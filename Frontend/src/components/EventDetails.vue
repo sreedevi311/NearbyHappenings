@@ -108,17 +108,50 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useEventStore } from '@/stores/event'
+import { useAuthStore } from '@/stores/auth' // ✅ import authStore
 import dayjs from 'dayjs'
+import { api } from '@/services/api'
 
 const route = useRoute()
 const eventStore = useEventStore()
+const authStore = useAuthStore() // ✅ define it
 
 const loading = ref(true)
+const interestedCount = ref(0)
+const userInterested = ref(false)
 
 const fetchEvent = async (id) => {
   loading.value = true
   await eventStore.fetchEventById(id)
+  await fetchInterestData(id)
   loading.value = false
+}
+
+const fetchInterestData = async (eventId) => {
+  try {
+    const res = await api.get(`/events/${eventId}/count`)
+    interestedCount.value = res.data.interestCount || 0
+
+    const currentUserId = authStore.userId
+    const event = eventStore.selectedEvent
+    userInterested.value = event?.interestedUsers?.includes(currentUserId)
+  } catch (err) {
+    console.error('Error fetching interest data', err)
+  }
+}
+
+const handleInterested = async () => {
+  try {
+    const eventId = route.params.id
+    const res = await api.post(`/events/${eventId}/toggle`, {}, { withCredentials: true })
+
+    if (res.status === 200) {
+      userInterested.value = res.data.interested
+      interestedCount.value = res.data.interestCount
+    }
+  } catch (err) {
+    console.error('Error toggling interest', err)
+  }
 }
 
 onMounted(() => {
@@ -131,20 +164,9 @@ watch(
     if (newId) fetchEvent(newId)
   }
 )
-
-const interestedCount = ref(0)
-const userInterested = ref(false)
-
-const handleInterested = () => {
-  if (!userInterested.value) {
-    interestedCount.value++
-    userInterested.value = true
-  } else {
-    interestedCount.value--
-    userInterested.value = false
-  }
-}
 </script>
+
+
 
 
 <style scoped>

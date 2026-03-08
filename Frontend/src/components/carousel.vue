@@ -1,5 +1,5 @@
 <template>
-  <section class="mb-12 relative mt-2">
+  <section class="mb-7 relative mt-4">
 
     <div class="relative w-[1200px] mx-auto overflow-visible">
       <!-- Carousel Track -->

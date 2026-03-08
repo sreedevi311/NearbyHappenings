@@ -2,9 +2,8 @@ feedback.vue:
 <template>
   <div
     class="min-h-screen bg-cover bg-center flex items-center justify-center px-4 py-10"
-    style="background-image: url('https://images.blocksurvey.io/cdn-cgi/imagedelivery/G6cPOuGZ4Z_bEV13gBxixw/template-category/event-experience.svg/l?auto=format&fit=crop&w=1350&q=80');"
   >
-    <div class="max-w-lg w-full bg-black bg-opacity-80 p-8 rounded-2xl shadow-lg border border-gray-700 text-white">
+    <div class="max-w-lg w-full bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-700 text-white">
       <h2 class="text-3xl font-bold mb-6 text-center text-teal-400">
         Share Your Feedback
       </h2>

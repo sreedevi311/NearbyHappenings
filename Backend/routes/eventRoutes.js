@@ -19,7 +19,10 @@ const { getEventsByTheme,
     upcomingDayEvents,
     getRandomThemeEvents,
     searchEvents,
-    getAllTags
+    getAllTags,
+    toggleInterest, 
+    getInterestCount,
+
 } = require('../controllers/eventControllers');
 const authMiddleware=require('../middleware/auth.middleware')
 
@@ -46,6 +49,9 @@ router.get('/user-interested-events/:userId',authMiddleware,userInterestedEvents
 router.get('/user-city-upcoming-day-events/:userId',authMiddleware,userCityUpcomingDayEvents);
 router.get('/upcoming-day-events',upcomingDayEvents);
 router.get('/random-theme-events', getRandomThemeEvents);
+router.post('/:id/toggle', authMiddleware, toggleInterest);
+router.get('/:id/count', getInterestCount);
+
 
 
 router.get('/:id', getEventById)

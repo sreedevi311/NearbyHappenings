@@ -267,15 +267,14 @@ const userCityUpcomingDayEvents = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const userCity = user.city;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Ensure time is set to start of the day
+    const now = new Date(); // Current time
 
     const events = await Event.find({
       city: userCity,
-      date: { $gte: today.toISOString().slice(0, 10) },
+      date: { $gte: now }, // Compare full Date object
     })
-      .sort({ date: 1 })     // Sort by soonest first
-      .limit(10);            // Limit to 10 events
+      .sort({ date: 1 })   // Soonest first
+      .limit(10);          // Limit to 10
 
     console.log("🎉 Found events:", events.length);
     return res.status(200).json(events);
@@ -285,16 +284,17 @@ const userCityUpcomingDayEvents = async (req, res) => {
   }
 };
 
+
 const upcomingDayEvents = async (req, res) => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Ensure time is set to start of the day
+    const now = new Date(); // Current time
 
     const events = await Event.find({
-      date: { $gte: today.toISOString().slice(0, 10) },
+      date: { $gte: now },
     })
-      .sort({ date: 1 })     // Sort by soonest first
-      .limit(10);            // Limit to 10 events
+      .sort({ date: 1 })
+      .limit(10);
+
     return res.status(200).json(events);
   } catch (err) {
     console.error("❌ Error fetching events:", err.message);
@@ -368,6 +368,58 @@ const getAllTags = async (req, res) => {
   }
 };
 
+const toggleInterest = async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: No user info' });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    const alreadyInterested = event.interestedUsers.includes(userId);
+
+    if (alreadyInterested) {
+      event.interestedUsers.pull(userId);
+    } else {
+      event.interestedUsers.push(userId);
+    }
+
+    await event.save();
+
+    res.status(200).json({
+      message: alreadyInterested ? 'Removed from interested' : 'Marked as interested',
+      interested: !alreadyInterested,
+      interestCount: event.interestedUsers.length
+    });
+  } catch (error) {
+    console.error('❌ Error toggling interest:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// ✅ Get interest count for an event
+const getInterestCount = async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const event = await Event.findById(eventId).select('interestedUsers');
+
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    res.status(200).json({ interestCount: event.interestedUsers.length });
+  } catch (error) {
+    console.error('❌ Error getting interest count:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = { getEventsByTheme,
   saveFormEvent,
   pendingRequests,
@@ -388,4 +440,6 @@ module.exports = { getEventsByTheme,
   getRandomThemeEvents,
   searchEvents,
   getAllTags,
+  toggleInterest,
+  getInterestCount,
 };

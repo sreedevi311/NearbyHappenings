@@ -31,6 +31,9 @@ const eventSchema = new mongoose.Schema({
   createdAt: Date,
   status: String,
   updatedByAdmin: Boolean,
+  interestCount: { type: Number, default: 0 },
+  interestedUsers: [{ type: String }] ,
+
 }, { timestamps: true });
 
 const Event = mongoose.model('Event', eventSchema);

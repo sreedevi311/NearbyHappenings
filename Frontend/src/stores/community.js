@@ -12,19 +12,21 @@ export const useCommunityStore = defineStore('communities', {
       const res = await api.post('/communities/suggest', { userCity, interests, nearbyCities })
       this.suggested = res.data
     },
-    async joinCommunity(id) {
-      await api.post(`/communities/join/${id}`)
-      this.joined.push(id)
-    },
-    async leaveCommunity(id) {
-      try {
-        const { data } = await api.post(`/communities/leave/${id}`)
-        this.joined = this.joined.filter(cid => cid !== id)
-        this.activeCommunity = null
-      } catch (err) {
-        console.error("❌ Failed to leave community:", err)
-      }
-    },
+    async joinCommunity(id, userId) {
+  await api.post(`/communities/join/${id}`)
+  await this.fetchJoinedCommunities(userId)
+},
+
+async leaveCommunity(id, userId) {
+  try {
+    await api.post(`/communities/leave/${id}`)
+    await this.fetchJoinedCommunities(userId)
+    this.activeCommunity = null
+  } catch (err) {
+    console.error("❌ Failed to leave community:", err)
+  }
+}
+,
     async loadCommunity(id) {
       const res = await api.get(`/communities/${id}`)
       console.log(res.data)
