@@ -24,14 +24,3 @@ services:
     depends_on:
       - backend
     restart: always
-
-  mongo:
-    image: mongo:7
-    container_name: nearby-mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
-volumes:
-  mongo_data:
