@@ -15,7 +15,7 @@ services:
     build: 
       context: ./Frontend
       args:
-        VITE_API_URL: http://65.0.45.151:5000/nearby-happenings
+        VITE_API_URL: http://backend:5000/nearby-happenings
     container_name: nearbyhappenings-frontend
     ports:
       - "5173:5173"
