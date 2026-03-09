@@ -1,3 +1,8 @@
+const dns = require('node:dns');
+dns.setDefaultResultOrder('ipv4first'); 
+// If that didn't work, try adding this specifically for the SRV lookup:
+require('dns').setServers(['8.8.8.8', '8.8.4.4']);
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -46,7 +51,15 @@ app.get("/nearby-happenings/protected", authenticate, (req, res) => {
 });
 
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB ✅"))
-  .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT} ✅`)))
-  .catch(err => console.error(err));
-  require('./notificationScheduler');
+  .then(() => {
+    console.log("Connected to MongoDB ✅");
+    
+    // Start the server
+    app.listen(PORT, () => console.log(`Server running on port ${PORT} ✅`));
+    
+    // Initialize the scheduler ONLY after the DB is ready
+    require('./notificationScheduler'); 
+  })
+  .catch(err => {
+    console.error("Failed to connect to MongoDB ❌", err);
+  });

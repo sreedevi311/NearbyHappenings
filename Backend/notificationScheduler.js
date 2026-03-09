@@ -5,10 +5,6 @@ const User = require('./models/user.model');
 const Event = require('./models/events.model');
 const Theme = require('./models/theme.model'); // <-- This is the fix
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ DB Connected for notifications'))
-  .catch(err => console.error('❌ DB Connection Error', err));
-
 cron.schedule('55 7 * * *', async () => {
   console.log('🕘 Running scheduled notification job...');
 
