@@ -263,7 +263,7 @@ const googleAuthCallback = async (req, res) => {
     // Login flow
     else if (mode === 'login') {
       if (!user) {
-        return res.redirect('http://localhost:5173/?googleError=' + encodeURIComponent('No account found. Please sign up.'));
+        return res.redirect('http://65.0.45.151:5173/?googleError=' + encodeURIComponent('No account found. Please sign up.'));
       }
     }
 
@@ -291,10 +291,10 @@ res.cookie('refreshToken', refreshToken, {
 });
 
     // Redirect to Vue app (OAuth success)
-    return res.redirect('http://localhost:5173/');
+    return res.redirect('http://65.0.45.151:5173/');
   } catch (err) {
     console.error('❌ Google OAuth callback error:', err);
-    return res.redirect('http://localhost:5173/?googleError=' + encodeURIComponent('OAuth login failed.'));
+    return res.redirect('http://65.0.45.151:5173/?googleError=' + encodeURIComponent('Account already exists. Please sign in.'));
   }
 };
 
