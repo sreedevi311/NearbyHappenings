@@ -11,14 +11,14 @@ const { generateAccessToken, generateRefreshToken } = require("../utils/token");
 function setAuthCookies(res, accessToken, refreshToken) {
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: true, // set true in production with HTTPS
+    secure: false, // set true in production with HTTPS
     sameSite: 'Lax',
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: true,
+    secure: false,
     sameSite: 'Lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
