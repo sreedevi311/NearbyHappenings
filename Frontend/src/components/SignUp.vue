@@ -51,7 +51,9 @@
       <!-- Google button -->
       <button 
         @click="redirectToGoogle('signup')"
-        class="flex items-center justify-center border p-3 rounded w-full hover:bg-gray-700 bg-gray-800 text-gray-200">
+        class="flex items-center justify-center border p-3 rounded w-full hover:bg-gray-700 bg-gray-800 text-gray-200"
+        v-if="showGoogleAuth"
+        >
         <img src="https://static.vecteezy.com/system/resources/previews/011/598/471/original/google-logo-icon-illustration-free-vector.jpg" alt="Google" class="w-8 h-8 mr-2" />
         Continue with Google
       </button>
@@ -74,6 +76,7 @@ const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const signupError = ref('')
+const showGoogleAuth =import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true';
 
 const errors = ref({
   email: '',

@@ -242,6 +242,7 @@ const submitContactForm = async (req, res) => {
   }
 };
 
+const NEW_IP=process.env.NEW_IP || 'localhost'; // Fallback to localhost if NEW_IP is not set
 
 const googleAuthCallback = async (req, res) => {
   const mode = req.query.state; // 'login' or 'signup'
@@ -253,7 +254,7 @@ const googleAuthCallback = async (req, res) => {
     // Signup flow
     if (mode === 'signup') {
       if (user) {
-        return res.redirect('http://localhost:5173/?googleError=' + encodeURIComponent('Account already exists. Please sign in.'));
+        return res.redirect('http://NEW_IP:5173/?googleError=' + encodeURIComponent('Account already exists. Please sign in.'));
       }
 
       user = new User({ email, authProvider: 'google' });
@@ -263,7 +264,7 @@ const googleAuthCallback = async (req, res) => {
     // Login flow
     else if (mode === 'login') {
       if (!user) {
-        return res.redirect('http://65.0.45.151:5173/?googleError=' + encodeURIComponent('No account found. Please sign up.'));
+        return res.redirect('http://NEW_IP:5173/?googleError=' + encodeURIComponent('No account found. Please sign up.'));
       }
     }
 
@@ -291,10 +292,10 @@ res.cookie('refreshToken', refreshToken, {
 });
 
     // Redirect to Vue app (OAuth success)
-    return res.redirect('http://65.0.45.151:5173/');
+    return res.redirect('http://NEW_IP:5173/');
   } catch (err) {
     console.error('❌ Google OAuth callback error:', err);
-    return res.redirect('http://65.0.45.151:5173/?googleError=' + encodeURIComponent('Account already exists. Please sign in.'));
+    return res.redirect('http://NEW_IP:5173/?googleError=' + encodeURIComponent('Account already exists. Please sign in.'));
   }
 };
 
