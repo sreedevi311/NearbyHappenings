@@ -55,16 +55,16 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
 
           script: |
-            cd ~/NearbyHappenings
-
-            git pull origin main
-
             export VITE_API_URL="http://${{ secrets.EC2_HOST }}:5000/nearby-happenings"
-            
             export FRONTEND_URL="http://${{ secrets.EC2_HOST }}:5173"
 
+            cd ~/NearbyHappenings
+
+            git fetch origin
+            git reset --hard origin/main
+            git log --oneline -1
+
             docker compose down
+            docker compose up -d --build
 
-            docker compose build
-
-            docker compose up -d
+            docker compose ps
