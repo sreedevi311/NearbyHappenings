@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  VITE_API_URL: http://${{ secrets.EC2_HOST }}:5000/nearby-happenings
+  FRONTEND_URL: http://${{ secrets.EC2_HOST }}:5173
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -54,6 +58,10 @@ jobs:
             cd ~/NearbyHappenings
 
             git pull origin main
+
+            export VITE_API_URL="http://${{ secrets.EC2_HOST }}:5000/nearby-happenings"
+            
+            export FRONTEND_URL="http://${{ secrets.EC2_HOST }}:5173"
 
             docker compose down
 
