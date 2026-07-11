@@ -22,14 +22,13 @@ router.post("/", upload.single("image"), async (req, res) => {
         await s3.send(
             new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET_NAME,
-                Key: fileName,
+                Key: `uploads/original/${fileName}`,
                 Body: req.file.buffer,
                 ContentType: req.file.mimetype,
             })
         );
 
-        const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-
+        const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/uploads/compressed/${fileName}`;
         res.json({ url: imageUrl });
     } catch (err) {
         console.error(err);
