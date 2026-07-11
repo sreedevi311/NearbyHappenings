@@ -1,32 +1,40 @@
-// backend/routes/uploadRoutes.js
-const express = require('express')
-const router = express.Router()
-const multer = require('multer')
-const { v2: cloudinary } = require('cloudinary')
-const { CloudinaryStorage } = require('multer-storage-cloudinary')
-require('dotenv').config();
+const express = require("express");
+const router = express.Router();
+const multer = require("multer");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+require("dotenv").config();
 
-// 🔐 Replace with your real credentials from Cloudinary dashboard
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-})
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-// 📦 Setup multer to use Cloudinary as storage
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'community-posts', // cloud folder name
-    allowed_formats: ['jpg', 'jpeg', 'png'],
-  }
-})
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+});
 
-const upload = multer({ storage })
+router.post("/", upload.single("image"), async (req, res) => {
+    try {
+        const fileName = `${Date.now()}-${req.file.originalname}`;
 
-// 📤 Handle POST /api/upload
-router.post('/', upload.single('image'), (req, res) => {
-  res.json({ url: req.file.path }) // Cloudinary gives this image URL
-})
+        await s3.send(
+            new PutObjectCommand({
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: req.file.buffer,
+                ContentType: req.file.mimetype,
+            })
+        );
 
-module.exports = router
+        const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+        res.json({ url: imageUrl });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Upload failed" });
+    }
+});
+
+module.exports = router;
