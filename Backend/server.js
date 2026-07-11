@@ -27,7 +27,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "http://3.108.252.6:5173"
+    "http://${secrets.EC2_HOST}:5173"
   ],
   credentials: true
 }))

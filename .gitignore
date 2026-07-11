@@ -1,13 +1,13 @@
 # Node.js backend
-server/node_modules/
-server/.env
-server/logs/
-server/*.log
+Backend/node_modules/
+Backend/.env
+Backend/logs/
+Backend/*.log
 
 # Vue frontend
-client/node_modules/
-client/dist/
-client/.env*
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.env*
 
 # OS + Editor junk
 .DS_Store
